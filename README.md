@@ -1,6 +1,6 @@
 # Hatsune Miku (+Tainted)
 
-[![Build](https://github.com/vulpya/miku-and-friends/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vulpya/miku-and-friends/actions/workflows/build.yml) ![Isaac](https://img.shields.io/badge/Game-The%20Binding%20of%20Isaac-darkred) ![Character Mod](https://img.shields.io/badge/Type-Character%20Mod-blue) ![Miku](https://img.shields.io/badge/Vocaloid-Hatsune%20Miku-39C5BB)
+[![Build](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml) ![Isaac](https://img.shields.io/badge/Game-The%20Binding%20of%20Isaac-darkred) ![Character Mod](https://img.shields.io/badge/Type-Character%20Mod-blue) ![Miku](https://img.shields.io/badge/Vocaloid-Hatsune%20Miku-39C5BB)
 
 A standalone character mod for The Binding of Isaac featuring Hatsune Miku and her tainted counterpart.
 
