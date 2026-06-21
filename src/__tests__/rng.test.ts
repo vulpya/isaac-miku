@@ -1,3 +1,5 @@
+// TODO: Setup tests.
+
 import { getRandomSeed, setSeed } from "isaacscript-common";
 import { Debugger } from "../util/debug";
 import { rollWeighted } from "../util/rng";

@@ -24,14 +24,14 @@ interface MusicalNoteData {
   /** Chance to charm an enemy permanently in percent. */
   fanChance: float;
   /** Duration of the charm effect in seconds. */
-  charmDuration: number;
+  charmDuration: float;
 }
 
 const NAME = "Musical Note";
 
 const data: MusicalNoteData = {
-  charmChance: 10,
-  fanChance: 3,
+  charmChance: 20,
+  fanChance: 1.5,
   charmDuration: 3,
 };
 

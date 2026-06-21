@@ -104,8 +104,9 @@ export class EncoreItem extends Item {
   }
 
   /**
-   * Decides whether to block the normal clear room reward for an Encore. Boss rooms always allow
-   * rewards and never trigger Encore.
+   * Decides whether to block the normal clear room reward for an Encore.
+   *
+   * Boss rooms always allow rewards and never trigger Encore.
    *
    * @param rng RNG object for random chance calculation.
    * @param _position Position of the default reward spawn (unused here).

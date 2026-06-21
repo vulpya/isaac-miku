@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 const DEBUG = {
-  RNG: true,
+  RNG: false,
   MATH: false,
   CHARACTERS: false,
   ITEMS: false,
   TEAR: false,
   PICKUP: false,
-  EID: true,
+  EID: false,
 } as const;
 
 /** Debugging utility functions for the mod. */

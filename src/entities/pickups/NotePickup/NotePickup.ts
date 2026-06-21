@@ -38,10 +38,10 @@ export interface NoteTypeConfig {
   readonly color: Color;
 
   /** Chance for this note to appear when dropped. */
-  readonly weight: number;
+  readonly weight: float;
 
   /** Number of times the note's effect can be used. */
-  readonly uses: number;
+  readonly uses: int;
 
   /**
    * Function called when the note's effect is applied via a tear.
@@ -49,7 +49,15 @@ export interface NoteTypeConfig {
    * @param player The player who fired the tear.
    * @param tear The tear entity that will carry the note effect.
    */
-  readonly applyEffect: (player: EntityPlayer, tear: EntityTear) => void;
+  readonly applyEffect?: (player: EntityPlayer, tear: EntityTear) => void;
+
+  /**
+   * Function called when the note gets fired.
+   *
+   * @param player The player who fired the tear.
+   * @param tear The tear entity that will carry the note behavior.
+   */
+  readonly onFireTear?: (player: EntityPlayer, tear: EntityTear) => void;
 }
 
 /**
@@ -62,7 +70,7 @@ export interface NoteInstance {
   subType: NotePickupSubType;
 
   /** How many uses are remaining for this note. */
-  remainingUses: number;
+  remainingUses: int;
 }
 
 /**

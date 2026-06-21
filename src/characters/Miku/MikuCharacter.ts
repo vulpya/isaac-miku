@@ -21,7 +21,8 @@ interface MikuPlayerData {
 
 const NAME = "Miku";
 const DESCRIPTION = "Uses music to charm enemies. Some may even become fans!";
-const BIRTHRIGHT_DESC = "Chance to permanently charm enemies scales with Luck.";
+const BIRTHRIGHT_DESC =
+  "Chance to permanently charm enemies. Scales with Luck.";
 const ACTIVE = CollectibleTypeCustom.MICROPHONE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
@@ -48,19 +49,19 @@ export class MikuCharacter extends Character {
   )
   override postPlayerInitFirst(player: EntityPlayer): void {
     player.AddNullCostume(HAIR);
-    Debugger.char(NAME, `applied null costume: ${HAIR}`);
+    Debugger.char(NAME, `applied null costume: ${HAIR}.`);
 
     const playerData = getData<MikuPlayerData>(player);
 
     if (!(playerData.hasIdol ?? false)) {
       player.AddCollectible(NULL_ITEM, 0);
       playerData.hasIdol = true;
-      Debugger.char(NAME, `Applied null item: ${NULL_ITEM}`);
+      Debugger.char(NAME, `Applied null item: ${NULL_ITEM}.`);
     }
 
     if (!player.HasCollectible(ACTIVE)) {
       player.AddCollectible(ACTIVE, ActiveSlot.PRIMARY, false);
-      Debugger.char(NAME, "Give microphone active item");
+      Debugger.char(NAME, "Give microphone active item.");
     }
   }
 

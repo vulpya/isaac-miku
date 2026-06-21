@@ -3,13 +3,18 @@ import {
   ActiveSlot,
   ButtonAction,
   CacheFlag,
+  CollectibleType,
+  EffectVariant,
+  EntityCollisionClass,
   EntityFlag,
   ModCallback,
+  PickupVariant,
   PlayerVariant,
   SoundEffect,
 } from "isaac-typescript-definitions";
 import type { PlayerIndex, SaveData } from "isaacscript-common";
 import {
+  addCollectibleCostume,
   Callback,
   CallbackCustom,
   getPlayerFromEntity,
@@ -22,11 +27,15 @@ import {
   jsonEncode,
   ModCallbackCustom,
   ReadonlyMap,
+  removeCollectibleCostume,
+  spawnEffect,
+  VectorZero,
 } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
 import { spawnNotePickup } from "../../entities/pickups/helper";
 import type { NoteInstance } from "../../entities/pickups/NotePickup/NotePickup";
 import {
+  ITEM_SYNERGIES,
   NOTE_TYPE_DATA,
   NotePickupSubType,
 } from "../../entities/pickups/NotePickup/NotePickupSubType";
@@ -47,16 +56,24 @@ export interface TaintedMikuData {
   erased?: string[];
   notes?: NoteInstance[];
   useNotes?: boolean;
+
+  unlockedNotes?: NotePickupSubType[];
 }
 
 const NAME = "Miku";
-const DESCRIPTION = "An idol twisted, using enemies as her melody.";
+const DESCRIPTION = "A twisted idol, using enemies as her melody.";
 const BIRTHRIGHT_DESC = "TODO";
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
-const NOTE_DROP_CHANCE = 100;
+const NOTE_DROP_CHANCE = 50;
 
-export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, number>([
+const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
+  [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
+  [CollectibleType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
+  // eslint-disable-next-line complete/require-unannotated-const-assertions
+} as const;
+
+export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
   [CacheFlag.DAMAGE, 3.2],
   [CacheFlag.FIRE_DELAY, 2.25],
   [CacheFlag.LUCK, -1],
@@ -72,8 +89,6 @@ export class MikuTaintedCharacter extends Character {
   private font: Font | undefined = undefined;
   /** Map to track which player made the last hit on an enemy. */
   private readonly npcLastHitPlayer = new Map<Seed, PlayerIndex>();
-  /** Tracker for hold input. */
-  private readonly dropHoldFrames = new Map<PlayerIndex, int>();
 
   @CallbackCustom(ModCallbackCustom.POST_GAME_STARTED_REORDERED, true)
   override onGameStart(isContinued: boolean): void {
@@ -91,15 +106,15 @@ export class MikuTaintedCharacter extends Character {
     SAVE_DATA.players = {};
 
     const players = getPlayersOfType(PlayerTypeCustom.MIKU_B);
-
     for (const player of players) {
       const playerData = getData<TaintedMikuData>(player);
 
-      const { erased, notes } = playerData;
+      const { erased, notes, useNotes } = playerData;
 
       SAVE_DATA.players[player.ControllerIndex.toString()] = {
         erased: erased ? [...erased] : [],
         notes: notes ? [...notes] : [],
+        useNotes: useNotes ?? false,
       };
     }
 
@@ -123,6 +138,7 @@ export class MikuTaintedCharacter extends Character {
     playerData.erased = [];
     playerData.notes = [];
     playerData.useNotes = false;
+    playerData.unlockedNotes = [];
 
     player.AddNullCostume(HAIR);
     Debugger.char(`${NAME} (Tainted)`, `Applied null costume: ${HAIR}`);
@@ -216,6 +232,7 @@ export class MikuTaintedCharacter extends Character {
 
     const playerData = getData<TaintedMikuData>(player);
     const { notes, useNotes } = playerData;
+
     if ((useNotes ?? false) || !notes || notes.length === 0) {
       return;
     }
@@ -228,8 +245,9 @@ export class MikuTaintedCharacter extends Character {
     const noteData = NOTE_TYPE_DATA[note.subType];
     const tearData = getData<GlitchNoteTearData>(tear);
 
+    noteData.applyEffect?.(player, tear);
+    noteData.onFireTear?.(player, tear);
     tearData.color = noteData.color;
-    noteData.applyEffect(player, tear);
 
     note.remainingUses--;
     if (note.remainingUses <= 0) {
@@ -434,6 +452,18 @@ export class MikuTaintedCharacter extends Character {
           );
         }
       }
+
+      if (player.HasCollectible(CollectibleTypeCustom.BRIMSTONE_NOTE)) {
+        addCollectibleCostume(player, CollectibleType.BRIMSTONE);
+      } else {
+        removeCollectibleCostume(player, CollectibleType.BRIMSTONE);
+      }
+
+      if (player.HasCollectible(CollectibleTypeCustom.DR_FETUS_NOTE)) {
+        addCollectibleCostume(player, CollectibleType.DR_FETUS);
+      } else {
+        removeCollectibleCostume(player, CollectibleType.DR_FETUS);
+      }
     }
   }
 
@@ -490,15 +520,33 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    const rng = npc.GetDropRNG();
-    const NOTE_SUBTYPES: readonly NotePickupSubType[] = Object.values(
-      NotePickupSubType,
-    ).filter((v): v is NotePickupSubType => typeof v === "number");
+    const playerData = getData<TaintedMikuData>(player);
+    const unlocked = playerData.unlockedNotes ?? [];
+
+    const baseNotes = Object.values(NotePickupSubType).filter(
+      (v): v is NotePickupSubType =>
+        typeof v === "number" && NOTE_TYPE_DATA[v].weight > 0,
+    );
+
+    const noteSubTypes: NotePickupSubType[] = [
+      ...baseNotes,
+      ...unlocked.filter((n) => !baseNotes.includes(n)),
+    ];
+
+    const weights = noteSubTypes.map((s) =>
+      unlocked.includes(s) ? 2 : NOTE_TYPE_DATA[s].weight,
+    );
+
+    print(
+      `POOL: ${noteSubTypes.map((s) => NOTE_TYPE_DATA[s].name).join(", ")}`,
+    );
+
+    print(`WEIGHTS: ${weights.join(", ")}`);
 
     const note = rollWeighted(
-      NOTE_SUBTYPES,
-      NOTE_SUBTYPES.map((s) => NOTE_TYPE_DATA[s].weight),
-      rng,
+      noteSubTypes,
+      weights,
+      npc.GetDropRNG(),
       NOTE_DROP_CHANCE,
     );
 
@@ -514,6 +562,48 @@ export class MikuTaintedCharacter extends Character {
     } else {
       spawnNotePickup(note, npc.Position);
     }
+  }
+
+  @Callback(ModCallback.PRE_PICKUP_COLLISION, PickupVariant.COLLECTIBLE)
+  prePickupCollision(
+    pickup: EntityPickup,
+    collider: Entity,
+    _low: boolean,
+  ): boolean | undefined {
+    const player = getPlayerFromEntity(collider);
+    if (!player || !isMiku(player, true)) {
+      return undefined;
+    }
+
+    const itemID = pickup.SubType as CollectibleType;
+    const synergyNote = ITEM_SYNERGIES[itemID];
+    const replaceItem = ITEM_REPLACEMENTS[itemID];
+
+    if (synergyNote === undefined || replaceItem === undefined) {
+      return undefined;
+    }
+
+    const data = getData<TaintedMikuData>(player);
+    data.unlockedNotes ??= [];
+
+    if (!data.unlockedNotes.includes(synergyNote)) {
+      data.unlockedNotes.push(synergyNote);
+    }
+
+    player.AnimateCollectible(replaceItem);
+    player.AddCollectible(replaceItem);
+
+    pickup.EntityCollisionClass = EntityCollisionClass.NONE;
+    pickup.GetSprite().Play("Collect", true);
+
+    pickup.Timeout = 2;
+
+    SFXManager().Play(SoundEffect.POWER_UP_SPEWER);
+
+    spawnEffect(EffectVariant.POOF_1, 0, pickup.Position, VectorZero);
+    spawnNotePickup(synergyNote, player.Position);
+
+    return undefined;
   }
 
   /**
@@ -544,5 +634,10 @@ export class MikuTaintedCharacter extends Character {
       `${NAME} (Tainted)`,
       "Add description and birthright description.",
     );
+
+    /*     eid.addCollectible(
+      CollectibleType.BRIMSTONE,
+      "↓ {{Tears}} x0.33 Fire rate multiplier#{{Chargeable}} Isaac's tears are replaced by a chargeable blood beam#{{Damage}} It deals 9x Isaac's damage over 0.63 seconds#{{ColorGray}}Tainted Miku:#{{Warning}} Brimstone Notes will now drop",
+    ); */
   }
 }

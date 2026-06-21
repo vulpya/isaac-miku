@@ -1,4 +1,8 @@
-import { SoundEffect, TearFlag } from "isaac-typescript-definitions";
+import {
+  CollectibleType,
+  SoundEffect,
+  TearFlag,
+} from "isaac-typescript-definitions";
 import { arrayToBitFlags, isActiveEnemy } from "isaacscript-common";
 import type { TaintedMikuData } from "../../../characters/Miku/MikuTaintedCharacter";
 import { getData } from "../../../util/data";
@@ -33,7 +37,19 @@ export enum NotePickupSubType {
   ERASER,
   ICE,
   FIRE,
+
+  // SYNERGIES
+  BRIMSTONE,
+  DR_FETUS,
 }
+
+export const ITEM_SYNERGIES: Partial<
+  Record<CollectibleType, NotePickupSubType>
+> = {
+  [CollectibleType.BRIMSTONE]: NotePickupSubType.BRIMSTONE,
+  [CollectibleType.DR_FETUS]: NotePickupSubType.DR_FETUS,
+  // eslint-disable-next-line complete/require-unannotated-const-assertions
+} as const;
 
 /**
  * Mapping of each `NotePickup` subtype to its configuration.
@@ -50,7 +66,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Spooky Note",
     description: "Causes fear or slows enemies down.",
     color: Color(0.15, 0.25, 0.4, 1, 0, 0, 0),
-    weight: 2,
+    weight: 1,
     uses: 3,
     applyEffect: (player, tear) => {
       tear.AddTearFlags(TearFlag.CONFUSION);
@@ -72,7 +88,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Love Note",
     description: "Charms an enemy permanently.",
     color: Color(0.85, 0.25, 0.25, 1, 0, 0, 0),
-    weight: 1,
+    weight: 0.7,
     uses: 1,
     applyEffect: (_player: EntityPlayer, tear: EntityTear) => {
       const tearData = getData<GlitchNoteTearData>(tear);
@@ -87,7 +103,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Toxic Note",
     description: "Poisons and explodes on impact.",
     color: Color(0.25, 0.75, 0.35, 1, 0, 0, 0),
-    weight: 0.5,
+    weight: 0.33,
     uses: 1,
     applyEffect: (_player, tear) => {
       tear.AddTearFlags(arrayToBitFlags([TearFlag.POISON, TearFlag.EXPLOSIVE]));
@@ -97,7 +113,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Greedy Note",
     description: "Small chance to apply {{ColorGold}}Midas Touch{{CR}}.",
     color: Color(1, 0.78, 0.15, 1, 0, 0, 0),
-    weight: 1,
+    weight: 0.5,
     uses: 4,
     applyEffect: (player, tear) => {
       tear.AddTearFlags(TearFlag.MIDAS);
@@ -114,7 +130,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Mystic Note",
     description: "Tears home in on enemies.",
     color: Color(0.65, 0.3, 0.9, 1, 0, 0, 0),
-    weight: 2,
+    weight: 1,
     uses: 3,
     applyEffect: (_player, tear) => {
       tear.AddTearFlags(TearFlag.HOMING);
@@ -181,6 +197,49 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
           burnEnemy(enemy, 0.4, 3);
         }
       };
+    },
+  },
+  [NotePickupSubType.BRIMSTONE]: {
+    name: "Brimstone Note",
+    description: "Fires a brimstone laser in the direction of your tear.",
+    color: Color(1, 0, 0, 1, 0, 0, 0),
+    weight: 0,
+    uses: 1,
+    onFireTear: (player, tear) => {
+      const dir = tear.Velocity;
+      tear.Remove();
+
+      if (dir.LengthSquared() <= 0) {
+        return;
+      }
+
+      const laser = player.FireBrimstone(dir);
+      laser.Parent = player;
+      laser.CollisionDamage = player.Damage * 2.5;
+    },
+  },
+  [NotePickupSubType.DR_FETUS]: {
+    name: "Dr Fetus Note",
+    description: "Fires a bomb in the direction of your tear.",
+    color: Color(0.1, 0.1, 0.1, 1, 0, 0, 0),
+    weight: 0,
+    uses: 5,
+    onFireTear: (player, tear) => {
+      const dir = tear.Velocity;
+      tear.Remove();
+
+      if (dir.LengthSquared() <= 0) {
+        return;
+      }
+
+      const bomb = player.FireBomb(tear.Position, dir.mul(1.5));
+
+      bomb.SpawnerEntity = player;
+      bomb.Parent = player;
+      bomb.ExplosionDamage = player.Damage * 2.5;
+      bomb.RadiusMultiplier = 1.2;
+      bomb.AddTearFlags(TearFlag.EXPLOSIVE);
+      bomb.CollisionDamage = bomb.ExplosionDamage;
     },
   },
   // eslint-disable-next-line complete/require-unannotated-const-assertions

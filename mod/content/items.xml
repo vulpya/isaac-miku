@@ -1,6 +1,8 @@
 <items gfxroot="gfx/items/" version="1">
   <passive id="1000" gfx="virtual_idol.png" name="Virtual Idol" description="Idol Charm" quality="3" />
   <passive gfx="virtual_idol.png" name="Encore!" description="Another One!" quality="3" />
+  <passive gfx="brimstone_note.png" name="Brimstone Note" description="TODO" quality="4" />
+  <passive gfx="dr_fetus_note.png" name="Dr. Fetus Note" description="TODO" quality="4" />
   <active gfx="microphone.png" name="Microphone" description="Sing your heart out" quality="4" maxcharges="8" chargetype="normal" />
   <active gfx="microphone.png" name="Broken Voice" description="Switch between silence and voices" quality="4" maxcharges="60" chargetype="timed" />
   <null name="Miku Idol" cache="collectibles" />

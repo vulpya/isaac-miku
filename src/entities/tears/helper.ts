@@ -30,8 +30,5 @@ export const spawnPoof = (
  * @returns The vertical offset value to add to the object's Y position.
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getWobbleOffset = (
-  index: number,
-  amplitude: number,
-  speed: number,
-): number => Math.sin(Game().GetFrameCount() * speed + index) * amplitude;
+const getWobbleOffset = (index: int, amplitude: float, speed: float): float =>
+  Math.sin(Game().GetFrameCount() * speed + index) * amplitude;

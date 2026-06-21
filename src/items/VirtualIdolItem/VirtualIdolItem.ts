@@ -13,11 +13,9 @@ const DESCRIPTION =
 
 export class VirtualIdolItem extends Item {
   /**
-   * Applies the `Musical Note` tears for `Virtual Idol` item.
+   * Applies `Musical Note` tears.
    *
-   * This runs once when a tear is spawned.
-   *
-   * It filters out non-player tears and only applies the effect if:
+   * Only applies the effect if:
    * - The player is `Miku` and has the `MikuNullItem` state enabled, OR
    * - The player holds this collectible item
    *

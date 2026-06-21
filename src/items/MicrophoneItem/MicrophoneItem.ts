@@ -20,8 +20,7 @@ export class MicrophoneItem extends ActiveItem {
   /**
    * Handles the use of the Microphone active item.
    *
-   * When used, charms all vulnerable, non-boss enemies in the current room, turning them into a
-   * fan.
+   * When used, charms all vulnerable, non-boss enemies in the current room, turning them into fans.
    *
    * @returns A {@link UseItemResult} object that:
    * - Discharges the item (consumes its charge)
@@ -45,7 +44,7 @@ export class MicrophoneItem extends ActiveItem {
       count++;
     }
 
-    Debugger.item(NAME, `Turned ${count} enemies into fan(s).`);
+    Debugger.item(NAME, `Turned ${count} enemies into fans.`);
 
     return {
       Discharge: true,
