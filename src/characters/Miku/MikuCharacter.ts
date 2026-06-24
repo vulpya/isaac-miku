@@ -30,7 +30,7 @@ const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 export const MIKU_STATS = new ReadonlyMap<CacheFlag, number>([
   [CacheFlag.SPEED, 1.2],
   [CacheFlag.DAMAGE, 2.8],
-  [CacheFlag.FIRE_DELAY, 3.2],
+  [CacheFlag.FIRE_DELAY, 3.5],
 ]);
 
 export class MikuCharacter extends Character {

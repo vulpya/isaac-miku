@@ -65,7 +65,7 @@ const DESCRIPTION = "A twisted idol, using enemies as her melody.";
 const BIRTHRIGHT_DESC = "TODO";
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
-const NOTE_DROP_CHANCE = 50;
+const NOTE_DROP_CHANCE = 40;
 
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
@@ -74,8 +74,8 @@ const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
 } as const;
 
 export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
-  [CacheFlag.DAMAGE, 3.2],
-  [CacheFlag.FIRE_DELAY, 2.25],
+  [CacheFlag.DAMAGE, 3.85],
+  [CacheFlag.FIRE_DELAY, 2],
   [CacheFlag.LUCK, -1],
   [CacheFlag.COLOR, 2],
 ]);
