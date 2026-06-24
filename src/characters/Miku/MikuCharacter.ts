@@ -20,7 +20,7 @@ interface MikuPlayerData {
 }
 
 const NAME = "Miku";
-const DESCRIPTION = "Uses music to charm enemies. Some may even become fans!";
+const DESCRIPTION = "Uses music to charm enemies.";
 const BIRTHRIGHT_DESC =
   "Chance to permanently charm enemies. Scales with Luck.";
 const ACTIVE = CollectibleTypeCustom.MICROPHONE;
@@ -28,8 +28,8 @@ const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 
 export const MIKU_STATS = new ReadonlyMap<CacheFlag, number>([
-  [CacheFlag.SPEED, 1.15],
-  [CacheFlag.DAMAGE, 2.7],
+  [CacheFlag.SPEED, 1.2],
+  [CacheFlag.DAMAGE, 2.8],
   [CacheFlag.FIRE_DELAY, 3.2],
 ]);
 

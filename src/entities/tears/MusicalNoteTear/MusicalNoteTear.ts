@@ -30,7 +30,7 @@ interface MusicalNoteData {
 const NAME = "Musical Note";
 
 const data: MusicalNoteData = {
-  charmChance: 20,
+  charmChance: 30,
   fanChance: 1.5,
   charmDuration: 3,
 };

@@ -1,6 +1,6 @@
 import { ISCFeature, upgradeMod } from "isaacscript-common";
 
-export const MOD_NAME = "Miku & Friends";
+export const MOD_NAME = "Hatsune Miku (+Tainted)";
 
 const ISC_FEATURES = [
   ISCFeature.SAVE_DATA_MANAGER,
