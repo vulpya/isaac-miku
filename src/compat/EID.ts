@@ -5,4 +5,9 @@ export interface EIDExtended extends EIDInterface {
     playerName?: string,
     language?: string,
   ) => void;
+
+  addDescriptionCallback: (
+    type: string,
+    callback: (descObj: EIDDescriptionObject) => void,
+  ) => void;
 }

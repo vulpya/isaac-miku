@@ -17,7 +17,7 @@ export abstract class ActiveItem extends Item {
   protected readonly active = true;
 
   /**
-   * Called after an active item is used.
+   * Called after an active item is used (`ModCallback.POST_USE_ITEM`).
    *
    * @param collectibleType The ID of the item that was used.
    * @param rng The RNG instance associated with the item use.
@@ -25,6 +25,7 @@ export abstract class ActiveItem extends Item {
    * @param useFlags Flags describing how the item was used (e.g. via card, pill, etc.).
    * @param activeSlot The active item slot the item was used from.
    * @param customVarData Custom variable data passed from the item (if any).
+   * @returns A {@link UseItemResult} object
    */
   onPostUseItem?(
     collectibleType: CollectibleType,
@@ -33,5 +34,5 @@ export abstract class ActiveItem extends Item {
     useFlags: BitFlags<UseFlag>,
     activeSlot: ActiveSlot,
     customVarData: int,
-  ): boolean | UseItemResult;
+  ): UseItemResult;
 }

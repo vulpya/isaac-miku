@@ -29,5 +29,13 @@
     "mod/content/rooms/**",
     "mod/resources/rooms/**",
   ],
-  "words": ["Arexz", "Charmable", "Hatsune", "Miku", "Vocaloid"],
+  "words": [
+    "Arexz",
+    "Charmable",
+    "Fearable",
+    "Hatsune",
+    "Miku",
+    "mikub",
+    "Vocaloid",
+  ],
 }

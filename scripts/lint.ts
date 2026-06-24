@@ -16,7 +16,7 @@ await lintScript(import.meta.dirname, async () => {
 
     // Use ts-prune to check for unused exports.
     // - "--error" makes it return an error code of 1 if unused exports are found.
-    $`ts-prune --error`,
+    $`ts-prune --error --project ./scripts/tsconfig.prune.json`,
 
     // Use CSpell to spell check every file.
     // - "--no-progress" and "--no-summary" make it only output errors.

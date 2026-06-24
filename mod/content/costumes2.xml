@@ -1,3 +1,4 @@
-<costumes anm2root="gfx/characters/costumes/">
+<costumes anm2root="gfx/characters/">
+  <costume id="1000" anm2path="virtual_idol.anm2" type="passive" priority="0" />
   <costume anm2path="Character_MikuHead.anm2" type="none" priority="100" />
 </costumes>

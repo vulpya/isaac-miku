@@ -15,6 +15,10 @@ export default defineConfig(
   ...isaacScriptModConfigBase,
 
   {
-    rules: {},
+    rules: {
+      "no-shadow": "off",
+      "@typescript-eslint/no-shadow": "off",
+      "@typescript-eslint/no-unnecessary-type-parameters": "off",
+    },
   },
 );

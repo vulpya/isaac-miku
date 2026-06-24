@@ -1,3 +1,4 @@
 <players root="gfx/characters/costumes/" portraitroot="gfx/ui/stage/" nameimageroot="gfx/ui/boss/">
   <player name="Miku" skin="Character_Miku.png" nameimage="PlayerName_Miku.png" hp="6" portrait="PlayerPortrait_Miku.png" skinColor="-1" costume="104" costumeSuffix="miku" birthright="Lucky idol" />
+  <player name="Miku" skin="Character_Miku_b.png" nameimage="PlayerName_Miku.png" hp="4" armor="2" keys="1" portrait="PlayerPortrait_Miku.png" skinColor="-1" bSkinParent="Miku" costume="104" costumeSuffix="mikub" />
 </players>

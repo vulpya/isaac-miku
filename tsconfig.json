@@ -1,4 +1,3 @@
-// The configuration file for TypeScript.
 {
   // We specify the schema to get auto-complete and validation.
   "$schema": "https://raw.githubusercontent.com/IsaacScript/isaacscript/main/packages/isaacscript-cli/schemas/tsconfig-isaacscript-schema.json",
@@ -12,10 +11,14 @@
     "isaacscript-tsconfig/tsconfig.mod.json",
   ],
 
+  "compilerOptions": {
+    "ignoreDeprecations": "5.0",
+  },
+
   // TypeScriptToLua settings
   "tstl": {
     "luaTarget": "5.3",
-    "luaBundle": "main.lua", // Will bundle all output Lua files into a single file of "./mod/main.lua".
+    "luaBundle": "main.lua",
     "luaBundleEntry": "./src/bundleEntry.ts",
     "luaPlugins": [
       // A plugin to add an explanatory comment at the top of the compiled "main.lua" file.
