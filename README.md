@@ -17,7 +17,7 @@ Use her **Microphone** to inspire your audience!
 
 ### Tainted Miku
 
-**Tainted Miku is very Work in Progress and not really balanced!**
+**Tainted Miku is Work in Progress and not really balanced / fletched out!**
 
 Due to losing her voice, she starts with only Glitch Notes.
 
