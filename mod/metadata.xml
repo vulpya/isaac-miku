@@ -3,7 +3,61 @@
 <metadata>
   <name>Hatsune Miku (+Tainted)</name>
   <directory>isaac-miku</directory>
-  <description>A mod adding Hatsune Miku and more Vocaloid-inspired content to The Binding of Isaac.</description>
-  <version>0.3</version>
+  <description>
+    [h1]Hatsune Miku (+Tainted)[/h1]
+
+A standalone character mod for The Binding of Isaac featuring Hatsune Miku and her tainted counterpart!
+
+[h1]TAINTED MIKU FIXED FOR VANILLA[/h1]
+
+Now when playing Vanilla Rep+, Tainted Miku's Lost Notes drops should work as intended!
+
+[h1]INFO[/h1]
+I get a lot of comments like the games not launching or the mod breaks the game. Make sure you have all DLCs!
+
+----------------------------------------------------------------------
+[h2]Features[/h2]
+
+[b]Hatsune Miku[/b]
+• Attacks with her voice with tears that resemble notes.
+• Each hit has a chance to [b]Charm[/b] enemies.
+• [b]Birthright Effect:[/b] Charmed enemies have a chance to permanently become your loyal [b]Fans[/b]! (until they die)
+• Use her active item, the [b]Microphone[/b], to inspire your audience!
+
+[b]Tainted Miku (Work In Progress)[/b]
+• Having lost her voice, she starts the run firing highly unstable [b]Glitch Notes[/b].
+• Slain enemies drop [b]Lost Notes[/b] onto the floor.
+• Collecting different Lost Notes grants various dynamic gameplay effects.
+• Use the [b]Broken Microphone[/b] to rapidly switch melodies.
+
+----------------------------------------------------------------------
+[h2]Mod Compatibility[/h2]
+
+• [b]External Item Descriptions (EID):[/b] Full native support is included!
+• Notice any missing or incorrect descriptions? Please leave a comment.
+
+----------------------------------------------------------------------
+[h2]Planned[/h2]
+
+• Finish and balance Tainted Miku's core gameplay loop.
+• Implement a unique Birthright effect for Tainted Miku.
+• Design and add more Miku-themed items to the item pools.
+• Upgrade custom sprites, animations, and special visual effects.
+• Overall balance tweaks and mechanical improvements.
+
+You can checkout the Github Repository here [url=https://github.com/vulpya/isaac-miku]Source Code[/url]
+
+----------------------------------------------------------------------
+[h2]Disclaimer[/h2]
+
+This is a non-commercial, fan-made mod created as a personal project for fun. All characters, names, and related properties belong to their original creators. This project is not affiliated with or endorsed by any official rights holders.
+
+----------------------------------------------------------------------
+[h2]Special Thanks[/h2]
+
+• [url=https://steamcommunity.com/profiles/76561198102520074]ale[/url] — For creating the amazing Miku/Vocaloid sprites!
+• [url=https://steamcommunity.com/id/thearexz]Arexz[/url] — For helping with custom sprite editing and refinement.
+  </description>
+  <version>0.3.1</version>
   <visibility />
 </metadata>

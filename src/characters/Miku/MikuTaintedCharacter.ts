@@ -517,8 +517,6 @@ export class MikuTaintedCharacter extends Character {
 
     const unlockedArray = [...unlocked];
 
-    print(unlockedArray);
-
     const baseNotes = Object.values(NotePickupSubType).filter(
       (v): v is NotePickupSubType =>
         typeof v === "number" && NOTE_TYPE_DATA[v].weight > 0,
