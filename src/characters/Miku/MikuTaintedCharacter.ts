@@ -6,7 +6,6 @@ import {
   CollectibleType,
   EffectVariant,
   EntityCollisionClass,
-  EntityFlag,
   ModCallback,
   PickupVariant,
   PlayerVariant,
@@ -15,11 +14,10 @@ import {
 import type { PlayerIndex, SaveData } from "isaacscript-common";
 import {
   addCollectibleCostume,
+  anyPlayerIs,
   Callback,
   CallbackCustom,
   getPlayerFromEntity,
-  getPlayerFromIndex,
-  getPlayerIndex,
   getPlayersOfType,
   getRandom,
   isActiveEnemy,
@@ -492,10 +490,6 @@ export class MikuTaintedCharacter extends Character {
       }
     }
 
-    if (!entity.HasEntityFlags(EntityFlag.NO_REWARD)) {
-      this.npcLastHitPlayer.set(entity.InitSeed, getPlayerIndex(player));
-    }
-
     return true;
   }
 
@@ -508,40 +502,36 @@ export class MikuTaintedCharacter extends Character {
    */
   @Callback(ModCallback.POST_NPC_DEATH)
   override postNPCDeath(npc: EntityNPC): void {
-    const lastHit = this.npcLastHitPlayer.get(npc.InitSeed);
-    this.npcLastHitPlayer.delete(npc.InitSeed);
-
-    if (lastHit === undefined) {
+    if (!anyPlayerIs(PlayerTypeCustom.MIKU_B) || !npc.IsEnemy()) {
       return;
     }
 
-    const player = getPlayerFromIndex(lastHit);
-    if (!player || !isMiku(player, true) || !npc.IsEnemy()) {
-      return;
+    const unlocked = new Set<NotePickupSubType>();
+
+    for (const player of getPlayersOfType(PlayerTypeCustom.MIKU_B)) {
+      const data = getData<TaintedMikuData>(player);
+      for (const note of data.unlockedNotes ?? []) {
+        unlocked.add(note);
+      }
     }
 
-    const playerData = getData<TaintedMikuData>(player);
-    const unlocked = playerData.unlockedNotes ?? [];
+    const unlockedArray = [...unlocked];
+
+    print(unlockedArray);
 
     const baseNotes = Object.values(NotePickupSubType).filter(
       (v): v is NotePickupSubType =>
         typeof v === "number" && NOTE_TYPE_DATA[v].weight > 0,
     );
 
-    const noteSubTypes: NotePickupSubType[] = [
+    const noteSubTypes = [
       ...baseNotes,
-      ...unlocked.filter((n) => !baseNotes.includes(n)),
+      ...unlockedArray.filter((n) => !baseNotes.includes(n)),
     ];
 
     const weights = noteSubTypes.map((s) =>
-      unlocked.includes(s) ? 2 : NOTE_TYPE_DATA[s].weight,
+      unlockedArray.includes(s) ? 2 : NOTE_TYPE_DATA[s].weight,
     );
-
-    print(
-      `POOL: ${noteSubTypes.map((s) => NOTE_TYPE_DATA[s].name).join(", ")}`,
-    );
-
-    print(`WEIGHTS: ${weights.join(", ")}`);
 
     const note = rollWeighted(
       noteSubTypes,
@@ -550,16 +540,7 @@ export class MikuTaintedCharacter extends Character {
       NOTE_DROP_CHANCE,
     );
 
-    Debugger.rng(
-      "NoteDrop",
-      `Rolled note for NPC ${npc.Type}_${npc.Variant}: ${
-        note === undefined ? "None" : NOTE_TYPE_DATA[note].name
-      }`,
-    );
-
-    if (note === undefined) {
-      /* empty */
-    } else {
+    if (note !== undefined) {
       spawnNotePickup(note, npc.Position);
     }
   }
@@ -634,10 +615,5 @@ export class MikuTaintedCharacter extends Character {
       `${NAME} (Tainted)`,
       "Add description and birthright description.",
     );
-
-    /*     eid.addCollectible(
-      CollectibleType.BRIMSTONE,
-      "↓ {{Tears}} x0.33 Fire rate multiplier#{{Chargeable}} Isaac's tears are replaced by a chargeable blood beam#{{Damage}} It deals 9x Isaac's damage over 0.63 seconds#{{ColorGray}}Tainted Miku:#{{Warning}} Brimstone Notes will now drop",
-    ); */
   }
 }
