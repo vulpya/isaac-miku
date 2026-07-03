@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<?xml-model href="https://wofsauge.github.io/isaac-xml-validator/xsd/metadata.xsd" ?>
 <metadata>
+  <id>3749427982</id>
   <name>Hatsune Miku (+Tainted)</name>
   <directory>isaac-miku</directory>
   <description>A mod adding Hatsune Miku and more Vocaloid-inspired content to The Binding of Isaac.</description>
