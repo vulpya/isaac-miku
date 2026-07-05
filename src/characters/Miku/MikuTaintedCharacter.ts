@@ -73,7 +73,6 @@ const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
 
 export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
   [CacheFlag.DAMAGE, 3.85],
-  [CacheFlag.FIRE_DELAY, 2],
   [CacheFlag.LUCK, -1],
   [CacheFlag.COLOR, 2],
 ]);
@@ -117,6 +116,17 @@ export class MikuTaintedCharacter extends Character {
     }
 
     mod.SaveData(jsonEncode(SAVE_DATA));
+  }
+
+  /* FIX: FireDelay in the isaacscript-common seems to cause issues with certain values of fire.
+  /  delay, but I might be just stupid. please let me know how to fix this properly. */
+  @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
+  override cacheFireDelay(player: EntityPlayer): void {
+    let maxFireDelay = 14;
+
+    maxFireDelay *= 1;
+
+    player.MaxFireDelay = maxFireDelay;
   }
 
   /**
