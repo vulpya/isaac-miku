@@ -13,7 +13,6 @@ import {
 } from "isaac-typescript-definitions";
 import type { SaveData } from "isaacscript-common";
 import {
-  addCollectibleCostume,
   anyPlayerIs,
   Callback,
   CallbackCustom,
@@ -25,11 +24,11 @@ import {
   jsonEncode,
   ModCallbackCustom,
   ReadonlyMap,
-  removeCollectibleCostume,
   spawnEffect,
   VectorZero,
 } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
+import { appendToDescription } from "../../compat/EID";
 import { spawnNotePickup } from "../../entities/pickups/helper";
 import type { NoteInstance } from "../../entities/pickups/NotePickup/NotePickup";
 import {
@@ -41,6 +40,7 @@ import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/Gli
 import { CollectibleTypeCustom } from "../../items/enum";
 import { mod } from "../../mod";
 import { getFireRateMultiplier, setFireRate } from "../../util/calc";
+import { updateCollectibleCostumes } from "../../util/costumes";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
 import { setTearColor } from "../../util/effects";
@@ -72,6 +72,11 @@ const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
 } as const;
 
+const ITEM_COSTUMES: Partial<Record<CollectibleType, CollectibleType>> = {
+  [CollectibleTypeCustom.BRIMSTONE_NOTE]: CollectibleType.BRIMSTONE,
+  [CollectibleTypeCustom.DR_FETUS_NOTE]: CollectibleType.DR_FETUS,
+} as const;
+
 const FIRE_RATE_ITEM_MULTIPLIERS: Partial<Record<CollectibleType, number>> = {
   [CollectibleType.MONSTROS_LUNG]: 0.35,
 } as const;
@@ -90,7 +95,7 @@ export class MikuTaintedCharacter extends Character {
   /** Font for the uses text of the notes. */
   private font: Font | undefined = undefined;
 
-  @CallbackCustom(ModCallbackCustom.POST_GAME_STARTED_REORDERED, true)
+  @CallbackCustom(ModCallbackCustom.POST_GAME_STARTED_REORDERED, undefined)
   override onGameStart(isContinued: boolean): void {
     if (!isContinued || !mod.HasData()) {
       return;
@@ -166,6 +171,7 @@ export class MikuTaintedCharacter extends Character {
    */
   @Callback(ModCallback.POST_PLAYER_INIT, PlayerVariant.PLAYER)
   override postPlayerInit(player: EntityPlayer): void {
+    super.postPlayerInit(player);
     if (!isMiku(player, true)) {
       return;
     }
@@ -179,6 +185,8 @@ export class MikuTaintedCharacter extends Character {
     playerData.erased = saved.erased;
     playerData.notes = saved.notes;
     playerData.useNotes = saved.useNotes;
+
+    this.postPlayerInit(player);
   }
 
   @CallbackCustom(
@@ -226,8 +234,7 @@ export class MikuTaintedCharacter extends Character {
       FIRE_RATE_ITEM_MULTIPLIERS,
     );
 
-    // If no item with extra multiplier was found, return to default item eval.
-    if (multiplier === 1) {
+    if (multiplier === -1) {
       return;
     }
 
@@ -326,8 +333,11 @@ export class MikuTaintedCharacter extends Character {
       const isRightSide = controllerSides[index] ?? false;
 
       // HUD layout config
-      const startX = isRightSide ? 300 : 45;
-      const startY = 45;
+      const hudOffset = Options.HUDOffset;
+      const hudX = hudOffset * 20;
+
+      const startX = isRightSide ? 300 - hudX : 45 + hudX;
+      const startY = 60;
       const spacing = 16;
       const baseSize = 14;
       const maxPerRow = 5;
@@ -478,17 +488,7 @@ export class MikuTaintedCharacter extends Character {
         }
       }
 
-      if (player.HasCollectible(CollectibleTypeCustom.BRIMSTONE_NOTE)) {
-        addCollectibleCostume(player, CollectibleType.BRIMSTONE);
-      } else {
-        removeCollectibleCostume(player, CollectibleType.BRIMSTONE);
-      }
-
-      if (player.HasCollectible(CollectibleTypeCustom.DR_FETUS_NOTE)) {
-        addCollectibleCostume(player, CollectibleType.DR_FETUS);
-      } else {
-        removeCollectibleCostume(player, CollectibleType.DR_FETUS);
-      }
+      updateCollectibleCostumes(player, ITEM_COSTUMES);
     }
   }
 
@@ -585,6 +585,12 @@ export class MikuTaintedCharacter extends Character {
     const synergyNote = ITEM_SYNERGIES[itemID];
     const replaceItem = ITEM_REPLACEMENTS[itemID];
 
+    // FIXME: Solution until I find a better one...
+    if (itemID === CollectibleType.LUDOVICO_TECHNIQUE) {
+      player.AddCollectible(CollectibleType.TECH_5);
+      return undefined;
+    }
+
     if (synergyNote === undefined || replaceItem === undefined) {
       return undefined;
     }
@@ -639,6 +645,23 @@ export class MikuTaintedCharacter extends Character {
     Debugger.eid(
       `${NAME} (Tainted)`,
       "Add description and birthright description.",
+    );
+
+    // TODO: Implement with loop.
+    appendToDescription(
+      eid,
+      "Brimstone",
+      PlayerTypeCustom.MIKU_B,
+      `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible118}} Brimstone#{{Collectible${CollectibleTypeCustom.BRIMSTONE_NOTE}}} Brimstone Notes can now drop from enemies`,
+      () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
+    );
+
+    appendToDescription(
+      eid,
+      "Dr. Fetus",
+      PlayerTypeCustom.MIKU_B,
+      `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible52}} Dr. Fetus#{{Collectible${CollectibleTypeCustom.DR_FETUS_NOTE}}} Dr. Fetus Explosive Notes can now drop from enemies`,
+      () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
     );
   }
 }

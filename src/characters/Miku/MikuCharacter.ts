@@ -69,6 +69,11 @@ export class MikuCharacter extends Character {
     }
   }
 
+  @Callback(ModCallback.POST_PLAYER_INIT)
+  override postPlayerInit(player: EntityPlayer): void {
+    super.postPlayerInit(player);
+  }
+
   @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
   override cacheFireDelay(player: EntityPlayer): void {
     if (!isMiku(player)) {
