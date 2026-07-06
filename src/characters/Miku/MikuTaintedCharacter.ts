@@ -11,7 +11,7 @@ import {
   PlayerVariant,
   SoundEffect,
 } from "isaac-typescript-definitions";
-import type { PlayerIndex, SaveData } from "isaacscript-common";
+import type { SaveData } from "isaacscript-common";
 import {
   addCollectibleCostume,
   anyPlayerIs,
@@ -37,10 +37,10 @@ import {
   NOTE_TYPE_DATA,
   NotePickupSubType,
 } from "../../entities/pickups/NotePickup/NotePickupSubType";
-import { TearVariantCustom } from "../../entities/tears/enum";
 import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/GlitchNoteTear";
 import { CollectibleTypeCustom } from "../../items/enum";
 import { mod } from "../../mod";
+import { setFireRate } from "../../util/calc";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
 import { setTearColor } from "../../util/effects";
@@ -49,13 +49,13 @@ import { rollWeighted } from "../../util/rng";
 import { SAVE_DATA } from "../../util/save";
 import { Character } from "../Character";
 import { isMiku, PlayerTypeCustom } from "../enum";
+import type { MikuPlayerData } from "./MikuCharacter";
 
-export interface TaintedMikuData {
-  erased?: string[];
-  notes?: NoteInstance[];
+export interface TaintedMikuData extends MikuPlayerData {
   useNotes?: boolean;
-
+  notes?: NoteInstance[];
   unlockedNotes?: NotePickupSubType[];
+  erased?: string[];
 }
 
 const NAME = "Miku";
@@ -63,7 +63,9 @@ const DESCRIPTION = "A twisted idol, using enemies as her melody.";
 const BIRTHRIGHT_DESC = "TODO";
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
-const NOTE_DROP_CHANCE = 40;
+const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
+const TEARS_STAT = -0.637;
+const NOTE_DROP_CHANCE = 60;
 
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
@@ -84,8 +86,6 @@ export class MikuTaintedCharacter extends Character {
   private activeNoteSprite: Sprite | undefined = undefined;
   /** Font for the uses text of the notes. */
   private font: Font | undefined = undefined;
-  /** Map to track which player made the last hit on an enemy. */
-  private readonly npcLastHitPlayer = new Map<Seed, PlayerIndex>();
 
   @CallbackCustom(ModCallbackCustom.POST_GAME_STARTED_REORDERED, true)
   override onGameStart(isContinued: boolean): void {
@@ -118,17 +118,6 @@ export class MikuTaintedCharacter extends Character {
     mod.SaveData(jsonEncode(SAVE_DATA));
   }
 
-  /* FIX: FireDelay in the isaacscript-common seems to cause issues with certain values of fire.
-  /  delay, but I might be just stupid. please let me know how to fix this properly. */
-  @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
-  override cacheFireDelay(player: EntityPlayer): void {
-    let maxFireDelay = 14;
-
-    maxFireDelay *= 1;
-
-    player.MaxFireDelay = maxFireDelay;
-  }
-
   /**
    * Called after Tainted Miku is initialized the first time.
    *
@@ -147,9 +136,17 @@ export class MikuTaintedCharacter extends Character {
     playerData.notes = [];
     playerData.useNotes = false;
     playerData.unlockedNotes = [];
+    playerData.hasIdol = false;
 
     player.AddNullCostume(HAIR);
     Debugger.char(`${NAME} (Tainted)`, `Applied null costume: ${HAIR}`);
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!playerData.hasIdol) {
+      player.AddCollectible(NULL_ITEM, 0);
+      playerData.hasIdol = true;
+      Debugger.char(NAME, `Applied null item: ${NULL_ITEM}.`);
+    }
 
     if (!player.HasCollectible(POCKET_ACTIVE)) {
       player.SetPocketActiveItem(POCKET_ACTIVE, ActiveSlot.POCKET, false);
@@ -215,6 +212,15 @@ export class MikuTaintedCharacter extends Character {
     }
   }
 
+  @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
+  override cacheFireDelay(player: EntityPlayer): void {
+    if (!isMiku(player, true)) {
+      return;
+    }
+
+    setFireRate<TaintedMikuData>(player, TEARS_STAT);
+  }
+
   @Callback(ModCallback.POST_TEAR_INIT)
   override postTearInit(tear: EntityTear): void {
     const player = getPlayerFromEntity(tear);
@@ -222,8 +228,6 @@ export class MikuTaintedCharacter extends Character {
     if (!player || !isMiku(player, true)) {
       return;
     }
-
-    tear.ChangeVariant(TearVariantCustom.GLITCH_NOTE);
 
     const tearData = getData<GlitchNoteTearData>(tear);
     const rng = tear.GetDropRNG();

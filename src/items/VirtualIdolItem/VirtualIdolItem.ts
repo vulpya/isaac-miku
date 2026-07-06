@@ -21,22 +21,30 @@ export class VirtualIdolItem extends Item {
    *
    * @param tear The tear entity that was just initialized.
    */
-  @Callback(ModCallback.POST_TEAR_INIT)
-  override postTearInit(tear: EntityTear): void {
+  @Callback(ModCallback.POST_FIRE_TEAR)
+  override postFireTear(tear: EntityTear): void {
     const player = tear.SpawnerEntity?.ToPlayer();
     if (!player) {
       return;
     }
 
+    const mikuType = isMiku(player);
+    const mikuBType = isMiku(player, true);
+
     if (
       !player.HasCollectible(CollectibleTypeCustom.VIRTUAL_IDOL)
-      && !isMiku(player)
+      && !(mikuType || mikuBType)
     ) {
       return;
     }
 
-    tear.ChangeVariant(TearVariantCustom.MUSICAL_NOTE);
-    Debugger.item(NAME, "'Musical Notes' applied");
+    if (mikuType) {
+      tear.ChangeVariant(TearVariantCustom.MUSICAL_NOTE);
+      Debugger.item(NAME, "Converted tear to Musical Note");
+    } else if (mikuBType) {
+      tear.ChangeVariant(TearVariantCustom.GLITCH_NOTE);
+      Debugger.item(NAME, "Converted tear to Glitch Note");
+    }
   }
 
   /**
