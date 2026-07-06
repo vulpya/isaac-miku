@@ -22,6 +22,11 @@ export interface GlitchNoteTearData extends TearData {
 }
 
 export class GlitchNoteTear extends Tear {
+  @Callback(ModCallback.POST_TEAR_INIT, TearVariantCustom.GLITCH_NOTE)
+  override postTearInit(tear: EntityTear): void {
+    this.applyEffect(tear);
+  }
+
   @Callback(ModCallback.POST_TEAR_UPDATE, TearVariantCustom.GLITCH_NOTE)
   override postTearUpdate(tear: EntityTear): void {
     const player = getPlayerFromEntity(tear);
@@ -30,13 +35,7 @@ export class GlitchNoteTear extends Tear {
       return;
     }
 
-    const tearData = getData<GlitchNoteTearData>(tear);
-    const rng = tear.GetDropRNG();
-
-    setTearColor(tear, tearData, rng);
-
-    applyPositionJitter(tear, rng);
-    applyRotationShift(tear, rng);
+    this.applyEffect(tear);
   }
 
   @CallbackCustom(
@@ -45,5 +44,15 @@ export class GlitchNoteTear extends Tear {
   )
   override postTearKill(tear: EntityTear): void {
     spawnPoof(tear, EffectVariant.TEAR_POOF_B);
+  }
+
+  private applyEffect(tear: EntityTear) {
+    const tearData = getData<GlitchNoteTearData>(tear);
+    const rng = tear.GetDropRNG();
+
+    setTearColor(tear, tearData, rng);
+
+    applyPositionJitter(tear, rng);
+    applyRotationShift(tear, rng);
   }
 }

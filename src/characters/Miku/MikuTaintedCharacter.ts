@@ -40,7 +40,7 @@ import {
 import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/GlitchNoteTear";
 import { CollectibleTypeCustom } from "../../items/enum";
 import { mod } from "../../mod";
-import { setFireRate } from "../../util/calc";
+import { getFireRateMultiplier, setFireRate } from "../../util/calc";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
 import { setTearColor } from "../../util/effects";
@@ -64,17 +64,20 @@ const BIRTHRIGHT_DESC = "TODO";
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
-const TEARS_STAT = -0.637;
-const NOTE_DROP_CHANCE = 60;
+const TEARS_STAT = -0.6;
+const NOTE_DROP_CHANCE = 65;
 
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
   [CollectibleType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
+} as const;
+
+const FIRE_RATE_ITEM_MULTIPLIERS: Partial<Record<CollectibleType, number>> = {
+  [CollectibleType.MONSTROS_LUNG]: 0.35,
 } as const;
 
 export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
-  [CacheFlag.DAMAGE, 3.85],
+  [CacheFlag.DAMAGE, 3.8],
   [CacheFlag.LUCK, -1],
   [CacheFlag.COLOR, 2],
 ]);
@@ -218,7 +221,17 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    setFireRate<TaintedMikuData>(player, TEARS_STAT);
+    const multiplier = getFireRateMultiplier(
+      player,
+      FIRE_RATE_ITEM_MULTIPLIERS,
+    );
+
+    // If no item with extra multiplier was found, return to default item eval.
+    if (multiplier === 1) {
+      return;
+    }
+
+    setFireRate<TaintedMikuData>(player, TEARS_STAT, multiplier);
   }
 
   @Callback(ModCallback.POST_TEAR_INIT)

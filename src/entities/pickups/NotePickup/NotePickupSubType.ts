@@ -48,7 +48,6 @@ export const ITEM_SYNERGIES: Partial<
 > = {
   [CollectibleType.BRIMSTONE]: NotePickupSubType.BRIMSTONE,
   [CollectibleType.DR_FETUS]: NotePickupSubType.DR_FETUS,
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
 } as const;
 
 /**
@@ -242,5 +241,4 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
       bomb.CollisionDamage = bomb.ExplosionDamage;
     },
   },
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
 } as const;

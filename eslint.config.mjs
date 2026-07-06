@@ -17,6 +17,7 @@ export default defineConfig(
   {
     rules: {
       "no-shadow": "off",
+      "complete/require-unannotated-const-assertions": "off",
       "@typescript-eslint/no-shadow": "off",
       "@typescript-eslint/no-unnecessary-type-parameters": "off",
     },

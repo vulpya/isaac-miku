@@ -6,5 +6,4 @@ interface ModSaveData {
 
 export const SAVE_DATA: ModSaveData = {
   players: {},
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
 } as const;
