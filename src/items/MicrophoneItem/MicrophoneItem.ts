@@ -1,10 +1,11 @@
-import type {
-  ActiveSlot,
+import type { ActiveSlot, UseFlag } from "isaac-typescript-definitions";
+import {
   CollectibleType,
-  UseFlag,
+  EntityType,
+  ModCallback,
+  RoomType,
 } from "isaac-typescript-definitions";
-import { ModCallback } from "isaac-typescript-definitions";
-import { Callback } from "isaacscript-common";
+import { Callback, spawnCollectible } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
 import { Debugger } from "../../util/debug";
 import { charmEnemy, getEnemies, isCharmable } from "../../util/enemies";
@@ -31,20 +32,47 @@ export class MicrophoneItem extends ActiveItem {
   override onPostUseItem(
     _collectibleType: CollectibleType,
     _rng: RNG,
-    _player: EntityPlayer,
+    player: EntityPlayer,
     _flags: BitFlags<UseFlag>,
     _slot: ActiveSlot,
     _data: int,
   ): UseItemResult {
-    const enemies = getEnemies().filter(isCharmable);
+    const enemies = getEnemies();
 
-    let count = 0;
+    const room = Game().GetRoom();
+    const inAngelRoom = room.GetType() === RoomType.ANGEL;
+
     for (const enemy of enemies) {
-      charmEnemy(enemy, 0, true);
-      count++;
-    }
+      if (inAngelRoom) {
+        if (enemy.Type === EntityType.URIEL) {
+          if (!player.HasCollectible(CollectibleType.KEY_PIECE_1)) {
+            spawnCollectible(
+              CollectibleType.KEY_PIECE_1,
+              room.FindFreePickupSpawnPosition(enemy.Position),
+              player.GetDropRNG(),
+            );
+          }
+          charmEnemy(enemy, 0, true, true);
+          continue;
+        }
 
-    Debugger.item(NAME, `Turned ${count} enemies into fans.`);
+        if (enemy.Type === EntityType.GABRIEL) {
+          if (!player.HasCollectible(CollectibleType.KEY_PIECE_2)) {
+            spawnCollectible(
+              CollectibleType.KEY_PIECE_2,
+              room.FindFreePickupSpawnPosition(enemy.Position),
+              player.GetDropRNG(),
+            );
+          }
+          charmEnemy(enemy, 0, true, true);
+          continue;
+        }
+      }
+
+      if (isCharmable(enemy)) {
+        charmEnemy(enemy, 0, true);
+      }
+    }
 
     return {
       Discharge: true,

@@ -41,10 +41,11 @@ export const charmEnemy = (
   entity: Entity,
   seconds: float,
   permanent = false,
+  bosses = false,
 ): boolean => {
   entity.AddCharmed(
     EntityRef(entity),
-    permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
+    permanent && (bosses || !entity.IsBoss()) ? -1 : getFrames(seconds),
   );
   return true;
 };
