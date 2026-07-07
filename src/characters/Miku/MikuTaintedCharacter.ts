@@ -202,12 +202,12 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    const isTapping = Input.IsActionTriggered(
+    const isDropping = Input.IsActionTriggered(
       ButtonAction.DROP,
       player.ControllerIndex,
     );
 
-    if (!(useNotes ?? false) && isTapping && notes.length > 1) {
+    if (!(useNotes ?? false) && isDropping && notes.length > 1) {
       const firstNote = notes.shift();
       if (firstNote) {
         notes.push(firstNote);

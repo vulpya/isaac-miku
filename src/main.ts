@@ -43,14 +43,14 @@ const FEATURES = [
 export const main = (): void => {
   initModFeatures(mod, FEATURES);
 
-  NotePickup.register();
-
-  mod.registerCharacterStats(PlayerTypeCustom.MIKU, MIKU_STATS);
-  mod.registerCharacterStats(PlayerTypeCustom.MIKU_B, MIKU_B_STATS);
-
   if (isRepentogon()) {
     print(`\n${MOD_NAME} v${version} loaded. [REPENTOGON]`);
   } else {
     print(`\n${MOD_NAME} v${version} loaded.`);
   }
+
+  NotePickup.register();
+
+  mod.registerCharacterStats(PlayerTypeCustom.MIKU, MIKU_STATS);
+  mod.registerCharacterStats(PlayerTypeCustom.MIKU_B, MIKU_B_STATS);
 };

@@ -6,7 +6,7 @@ const DEBUG = {
   ITEMS: false,
   TEAR: false,
   PICKUP: false,
-  EID: true,
+  EID: false,
 } as const;
 
 /** Debugging utility functions for the mod. */
