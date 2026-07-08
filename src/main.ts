@@ -9,12 +9,12 @@ import {
 import { NotePickup } from "./entities/pickups/NotePickup/NotePickup";
 import { GlitchNoteTear } from "./entities/tears/GlitchNoteTear/GlitchNoteTear";
 import { MusicalNoteTear } from "./entities/tears/MusicalNoteTear/MusicalNoteTear";
-import { BrimstoneNoteItem } from "./items/BrimstoneNoteItem/BrimstoneNoteItem";
-import { BrokenVoiceItem } from "./items/BrokenVoiceItem/BrokenVoiceItem";
-import { DrFetusNote } from "./items/DrFetusNote/DrFetusNote";
 import { EncoreItem } from "./items/EncoreItem/EncoreItem";
-import { MicrophoneItem } from "./items/MicrophoneItem/MicrophoneItem";
-import { VirtualIdolItem } from "./items/VirtualIdolItem/VirtualIdolItem";
+import { MicrophoneItem } from "./items/Miku/MicrophoneItem/MicrophoneItem";
+import { BrokenVoiceItem } from "./items/Miku/MikuB/BrokenVoiceItem/BrokenVoiceItem";
+import { BrimstoneNoteItem } from "./items/Miku/MikuB/replacements/BrimstoneNoteItem/BrimstoneNoteItem";
+import { DrFetusNote } from "./items/Miku/MikuB/replacements/DrFetusNote/DrFetusNote";
+import { VirtualIdolItem } from "./items/Miku/VirtualIdolItem/VirtualIdolItem";
 import { mod, MOD_NAME } from "./mod";
 
 const PASSIVE_ITEMS = [

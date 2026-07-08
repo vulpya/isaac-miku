@@ -8,10 +8,13 @@
 - [x] Add Tainted Miku Note System & HUD
 - [x] Add 'Passive Active Item' to switch between notes.
 - [x] Add Synergies to Tainted Miku. (e.g. Brimstone, Epic Fetus)
+- [ ] Add MCM Compat.
 
 ## TODO: Miku
 
 - [x] Balance Stats & charming chances + birthright fan chances.
+- [ ] Maybe add more default notes.
+  - [ ] Idea: On Enemy hit gets effect which leads the enemy to drop creep.
 - [ ] Add item synergies.
   - [ ] Maybe add Miku Leek synergy with Mom's Knife and/or Spirit Sword
 - [ ] Add charm blacklist, instead of just skipping over all bosses.

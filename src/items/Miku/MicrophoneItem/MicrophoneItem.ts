@@ -10,12 +10,12 @@ import {
   Callback,
   spawnCollectible,
 } from "isaacscript-common";
-import type { EIDExtended } from "../../compat/EID";
-import { Debugger } from "../../util/debug";
-import { charmEnemy, getEnemies, isCharmable } from "../../util/enemies";
-import type { UseItemResult } from "../ActiveItem";
-import { ActiveItem } from "../ActiveItem";
-import { CollectibleTypeCustom } from "../enum";
+import type { EIDExtended } from "../../../compat/EID";
+import { Debugger } from "../../../util/debug";
+import { charmEnemy, getEnemies, isCharmable } from "../../../util/enemies";
+import type { UseItemResult } from "../../ActiveItem";
+import { ActiveItem } from "../../ActiveItem";
+import { CollectibleTypeCustom } from "../../enum";
 
 const NAME = "Microphone";
 const DESCRIPTION =

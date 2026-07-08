@@ -5,14 +5,14 @@ import type {
 } from "isaac-typescript-definitions";
 import { ModCallback, SoundEffect } from "isaac-typescript-definitions";
 import { Callback } from "isaacscript-common";
-import { isMiku } from "../../characters/enum";
-import type { TaintedMikuData } from "../../characters/Miku/MikuTaintedCharacter";
-import type { EIDExtended } from "../../compat/EID";
-import { getData } from "../../util/data";
-import { Debugger } from "../../util/debug";
-import type { UseItemResult } from "../ActiveItem";
-import { ActiveItem } from "../ActiveItem";
-import { CollectibleTypeCustom } from "../enum";
+import { isMiku } from "../../../../characters/enum";
+import type { TaintedMikuData } from "../../../../characters/Miku/MikuTaintedCharacter";
+import type { EIDExtended } from "../../../../compat/EID";
+import { getData } from "../../../../util/data";
+import { Debugger } from "../../../../util/debug";
+import type { UseItemResult } from "../../../ActiveItem";
+import { ActiveItem } from "../../../ActiveItem";
+import { CollectibleTypeCustom } from "../../../enum";
 
 const NAME = "Broken Voice";
 const DESCRIPTION =

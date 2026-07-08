@@ -1,11 +1,11 @@
 import { ModCallback } from "isaac-typescript-definitions";
 import { Callback } from "isaacscript-common";
-import { isMiku } from "../../characters/enum";
-import type { EIDExtended } from "../../compat/EID";
-import { TearVariantCustom } from "../../entities/tears/enum";
-import { Debugger } from "../../util/debug";
-import { CollectibleTypeCustom } from "../enum";
-import { Item } from "../Item";
+import { isMiku } from "../../../characters/enum";
+import type { EIDExtended } from "../../../compat/EID";
+import { TearVariantCustom } from "../../../entities/tears/enum";
+import { Debugger } from "../../../util/debug";
+import { CollectibleTypeCustom } from "../../enum";
+import { Item } from "../../Item";
 
 const NAME = "Virtual Idol";
 const DESCRIPTION =

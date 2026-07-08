@@ -1,7 +1,7 @@
-import type { EIDExtended } from "../../compat/EID";
-import { Debugger } from "../../util/debug";
-import { Item } from "../Item";
-import { CollectibleTypeCustom } from "../enum";
+import type { EIDExtended } from "../../../../../compat/EID";
+import { Debugger } from "../../../../../util/debug";
+import { CollectibleTypeCustom } from "../../../../enum";
+import { Item } from "../../../../Item";
 
 const NAME = "Dr. Fetus Note";
 const DESCRIPTION = `Replaces {{Collectible52}} Dr. Fetus#{{Collectible${CollectibleTypeCustom.DR_FETUS_NOTE}}} Dr. Fetus Explosive Notes can now drop from enemies`;
