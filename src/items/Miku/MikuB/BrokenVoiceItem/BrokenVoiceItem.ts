@@ -3,9 +3,13 @@ import type {
   CollectibleType,
   UseFlag,
 } from "isaac-typescript-definitions";
-import { ModCallback, SoundEffect } from "isaac-typescript-definitions";
+import { ModCallback } from "isaac-typescript-definitions";
 import { Callback } from "isaacscript-common";
 import { isMiku } from "../../../../characters/enum";
+import {
+  MikuAttackMode,
+  setMikuAttackMode,
+} from "../../../../characters/Miku/mikuHelper";
 import type { TaintedMikuData } from "../../../../characters/Miku/MikuTaintedCharacter";
 import type { EIDExtended } from "../../../../compat/EID";
 import { getData } from "../../../../util/data";
@@ -40,16 +44,13 @@ export class BrokenVoiceItem extends ActiveItem {
   ): UseItemResult {
     if (isMiku(player, true)) {
       const playerData = getData<TaintedMikuData>(player);
-      if (playerData.notes && playerData.notes.length > 0) {
-        playerData.useNotes = !(playerData.useNotes ?? false);
-        SFXManager().Play(
-          SoundEffect.STATIC,
-          1,
-          2,
-          false,
-          playerData.useNotes ? 1 : 1.75,
-        );
-      }
+
+      setMikuAttackMode(
+        player,
+        playerData.attackMode === MikuAttackMode.GLITCH
+          ? MikuAttackMode.VOICES
+          : MikuAttackMode.GLITCH,
+      );
     }
 
     return {
