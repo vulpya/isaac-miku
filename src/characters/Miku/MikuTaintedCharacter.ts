@@ -39,7 +39,8 @@ import {
 import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/GlitchNoteTear";
 import { CollectibleTypeCustom } from "../../items/enum";
 import { mod } from "../../mod";
-import { getFireRateMultiplier, setFireRate } from "../../util/calc";
+import { maxFireDelayToTears, tearsToMaxFireDelay } from "../../util/calc";
+import { ISAAC_STATS } from "../../util/const";
 import { updateCollectibleCostumes } from "../../util/costumes";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
@@ -64,7 +65,6 @@ const BIRTHRIGHT_DESC = "TODO";
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
-const TEARS_STAT = -0.6;
 const NOTE_DROP_CHANCE = 65;
 
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
@@ -77,14 +77,11 @@ const ITEM_COSTUMES: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleTypeCustom.DR_FETUS_NOTE]: CollectibleType.DR_FETUS,
 } as const;
 
-const FIRE_RATE_ITEM_MULTIPLIERS: Partial<Record<CollectibleType, number>> = {
-  [CollectibleType.MONSTROS_LUNG]: 0.35,
-} as const;
-
 export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
-  [CacheFlag.DAMAGE, 3.8],
-  [CacheFlag.LUCK, -1],
+  [CacheFlag.DAMAGE, 4.35],
+  [CacheFlag.LUCK, -1.5],
   [CacheFlag.COLOR, 2],
+  [CacheFlag.FIRE_DELAY, 2.13],
 ]);
 
 export class MikuTaintedCharacter extends Character {
@@ -140,21 +137,18 @@ export class MikuTaintedCharacter extends Character {
   )
   override postPlayerInitFirst(player: EntityPlayer): void {
     const playerData = getData<TaintedMikuData>(player);
-    playerData.erased = [];
-    playerData.notes = [];
-    playerData.useNotes = false;
-    playerData.unlockedNotes = [];
     playerData.hasIdol = false;
+    playerData.useNotes = false;
+    playerData.notes = [];
+    playerData.erased = [];
+    playerData.unlockedNotes = [];
 
     player.AddNullCostume(HAIR);
     Debugger.char(`${NAME} (Tainted)`, `Applied null costume: ${HAIR}`);
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!playerData.hasIdol) {
-      player.AddCollectible(NULL_ITEM, 0);
-      playerData.hasIdol = true;
-      Debugger.char(NAME, `Applied null item: ${NULL_ITEM}.`);
-    }
+    player.AddCollectible(NULL_ITEM, 0);
+    playerData.hasIdol = true;
+    Debugger.char(NAME, `Applied null item: ${NULL_ITEM}.`);
 
     if (!player.HasCollectible(POCKET_ACTIVE)) {
       player.SetPocketActiveItem(POCKET_ACTIVE, ActiveSlot.POCKET, false);
@@ -229,16 +223,10 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    const multiplier = getFireRateMultiplier(
-      player,
-      FIRE_RATE_ITEM_MULTIPLIERS,
-    );
-
-    if (multiplier === -1) {
-      return;
+    const tears = maxFireDelayToTears(player.MaxFireDelay);
+    if (tears >= ISAAC_STATS.TEARS_THRESHOLD) {
+      player.MaxFireDelay = tearsToMaxFireDelay(0.1);
     }
-
-    setFireRate<TaintedMikuData>(player, TEARS_STAT, multiplier);
   }
 
   @Callback(ModCallback.POST_TEAR_INIT)

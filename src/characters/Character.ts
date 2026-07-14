@@ -1,9 +1,8 @@
 import type { EIDExtended } from "../compat/EID";
 import { Feature } from "../Feature";
 
-export interface PlayerData {
-  fireDelayInit?: boolean;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type, @typescript-eslint/no-empty-interface
+export interface PlayerData {}
 
 /** Abstract base class representing a custom character. */
 export abstract class Character extends Feature {

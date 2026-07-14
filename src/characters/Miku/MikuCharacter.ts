@@ -12,12 +12,11 @@ import {
 } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
 import { CollectibleTypeCustom } from "../../items/enum";
-import { setFireRate } from "../../util/calc";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
 import type { PlayerData } from "../Character";
 import { Character } from "../Character";
-import { isMiku, PlayerTypeCustom } from "../enum";
+import { PlayerTypeCustom } from "../enum";
 
 export interface MikuPlayerData extends PlayerData {
   hasIdol?: boolean;
@@ -30,11 +29,11 @@ const BIRTHRIGHT_DESC =
 const ACTIVE = CollectibleTypeCustom.MICROPHONE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
-const TEARS_STAT = 0.5;
 
 export const MIKU_STATS = new ReadonlyMap<CacheFlag, number>([
   [CacheFlag.SPEED, 1.2],
   [CacheFlag.DAMAGE, 2.8],
+  [CacheFlag.FIRE_DELAY, 3.33],
 ]);
 
 export class MikuCharacter extends Character {
@@ -72,15 +71,6 @@ export class MikuCharacter extends Character {
   @Callback(ModCallback.POST_PLAYER_INIT)
   override postPlayerInit(player: EntityPlayer): void {
     super.postPlayerInit(player);
-  }
-
-  @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
-  override cacheFireDelay(player: EntityPlayer): void {
-    if (!isMiku(player)) {
-      return;
-    }
-
-    setFireRate<MikuPlayerData>(player, TEARS_STAT);
   }
 
   /**
