@@ -1,18 +1,9 @@
 import type { DamageFlag } from "isaac-typescript-definitions";
-import type { ModUpgraded } from "isaacscript-common";
 import { ModFeature } from "isaacscript-common";
 import type { EIDExtended } from "./compat/EID";
 
 /** Abstract base class representing a custom feature. */
 export abstract class Feature extends ModFeature {
-  constructor(mod: ModUpgraded, init?: boolean) {
-    super(mod, init);
-    const ExEID = EID as EIDExtended | undefined;
-    if (this.setupEID && ExEID) {
-      this.setupEID(ExEID);
-    }
-  }
-
   onGameExit?(): void;
 
   onGameStart?(isContinued: boolean): void;
@@ -158,6 +149,7 @@ export abstract class Feature extends ModFeature {
    *
    * @param eid The extended EID API instance used to register descriptions and modify how the item
    *            appears in External Item Descriptions.
+   * @param player The Player entity.
    */
-  setupEID?(eid: EIDExtended): void;
+  setupEID?(eid: EIDExtended, player: EntityPlayer): void;
 }

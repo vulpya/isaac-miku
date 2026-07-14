@@ -46,7 +46,6 @@ const DEFAULT_ROOM_DATA: EncoreRoomData = {
   hadEnemies: false,
   enemies: [],
   encoreDelayTimer: undefined,
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
 } as const;
 
 // TODO: Balance pickups.
@@ -61,7 +60,6 @@ const ENCORE_PICKUPS: ReadonlyArray<{
   { variant: PickupVariant.PILL, maxSubtype: 23 },
   { variant: PickupVariant.CARD, maxSubtype: 52 },
   { variant: PickupVariant.CHEST, maxSubtype: 0 },
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
 ] as const;
 
 const ENCORE_DELAY = getFrames(5);

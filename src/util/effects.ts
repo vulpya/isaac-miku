@@ -27,17 +27,25 @@ export const setTearColor = (
 /**
  * Applies a subtle "floaty" jitter effect to the tear's position.
  *
- * - This function randomly offsets the tear's position slightly, creating an organic and jittery
- *   effect in the tear's movement. The intensity of the jitter is determined by a random chance and
- *   the RNG value.
+ * - This function randomly offsets the tear's position slightly, creating an kinda organic and
+ *   jittery effect in the tear's movement.
+ * - The intensity increases the strength of the jitter.
  *
  * @param tear The tear entity whose position will be modified by the jitter effect.
  * @param rng A random number generator instance used to determine the jitter amount.
+ * @param intensity Strength multiplier for the effect (0-1).
  */
-export const applyPositionJitter = (tear: EntityTear, rng: RNG): void => {
+export const applyPositionJitter = (
+  tear: EntityTear,
+  rng: RNG,
+  intensity = 1,
+): void => {
   if (rollChance(15, rng, 0)) {
-    const jitterX = (getRandom(rng) - 0.5) * 0.3;
-    const jitterY = (getRandom(rng) - 0.5) * 0.3;
+    const amount = 0.3 * intensity;
+
+    const jitterX = (getRandom(rng) - 0.5) * amount;
+    const jitterY = (getRandom(rng) - 0.5) * amount;
+
     tear.Position = tear.Position.add(Vector(jitterX, jitterY));
   }
 };
@@ -45,15 +53,21 @@ export const applyPositionJitter = (tear: EntityTear, rng: RNG): void => {
 /**
  * Applies random rotation shifts to the tear, creating a less rigid, more dynamic motion.
  *
- * - This function adds a small random shift to the tear's rotation. The shift amount is determined
- *   by the RNG.
+ * - The rotation distortion increases with the intensity value.
  *
  * @param tear The tear entity whose rotation will be modified by the rotation shift.
  * @param rng A random number generator instance used to determine the rotation shift amount.
+ * @param intensity Strength multiplier for the effect (0-1).
  */
-export const applyRotationShift = (tear: EntityTear, rng: RNG): void => {
+export const applyRotationShift = (
+  tear: EntityTear,
+  rng: RNG,
+  intensity = 1,
+): void => {
   if (rollChance(20, rng, 0)) {
-    const rotationShift = (getRandom(rng) - 0.5) * 4;
+    const amount = 4 * intensity;
+
+    const rotationShift = (getRandom(rng) - 0.5) * amount;
     tear.SpriteRotation += rotationShift;
   }
 };

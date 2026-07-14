@@ -1,7 +1,7 @@
-import type { EIDExtended } from "../../compat/EID";
-import { Debugger } from "../../util/debug";
-import { Item } from "../Item";
-import { CollectibleTypeCustom } from "../enum";
+import type { EIDExtended } from "../../../../../compat/EID";
+import { Debugger } from "../../../../../util/debug";
+import { CollectibleTypeCustom } from "../../../../enum";
+import { Item } from "../../../../Item";
 
 const NAME = "Brimstone Note";
 const DESCRIPTION = `Replaces {{Collectible118}} Brimstone#{{Collectible${CollectibleTypeCustom.BRIMSTONE_NOTE}}} Brimstone Notes can now drop from enemies`;

@@ -1,10 +1,10 @@
-import type { TaintedMikuData } from "../characters/Miku/MikuTaintedCharacter";
+import type { SaveData } from "isaacscript-common";
+import type { TaintedMikuSaveData } from "../characters/Miku/MikuTaintedCharacter";
 
-interface ModSaveData {
-  players: Record<string, TaintedMikuData>;
+export interface ModSaveData extends SaveData {
+  mikuBs: Record<string, TaintedMikuSaveData>;
 }
 
 export const SAVE_DATA: ModSaveData = {
-  players: {},
-  // eslint-disable-next-line complete/require-unannotated-const-assertions
+  mikuBs: {},
 } as const;

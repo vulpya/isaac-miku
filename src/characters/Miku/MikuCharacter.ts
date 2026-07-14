@@ -1,9 +1,11 @@
 import {
   ActiveSlot,
   CacheFlag,
+  ModCallback,
   PlayerVariant,
 } from "isaac-typescript-definitions";
 import {
+  Callback,
   CallbackCustom,
   ModCallbackCustom,
   ReadonlyMap,
@@ -12,10 +14,11 @@ import type { EIDExtended } from "../../compat/EID";
 import { CollectibleTypeCustom } from "../../items/enum";
 import { getData } from "../../util/data";
 import { Debugger } from "../../util/debug";
+import type { PlayerData } from "../Character";
 import { Character } from "../Character";
 import { PlayerTypeCustom } from "../enum";
 
-interface MikuPlayerData {
+export interface MikuPlayerData extends PlayerData {
   hasIdol?: boolean;
 }
 
@@ -30,7 +33,7 @@ const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 export const MIKU_STATS = new ReadonlyMap<CacheFlag, number>([
   [CacheFlag.SPEED, 1.2],
   [CacheFlag.DAMAGE, 2.8],
-  [CacheFlag.FIRE_DELAY, 3.5],
+  [CacheFlag.FIRE_DELAY, 3.33],
 ]);
 
 export class MikuCharacter extends Character {
@@ -63,6 +66,11 @@ export class MikuCharacter extends Character {
       player.AddCollectible(ACTIVE, ActiveSlot.PRIMARY, false);
       Debugger.char(NAME, "Give microphone active item.");
     }
+  }
+
+  @Callback(ModCallback.POST_PLAYER_INIT)
+  override postPlayerInit(player: EntityPlayer): void {
+    super.postPlayerInit(player);
   }
 
   /**
