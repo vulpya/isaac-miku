@@ -19,6 +19,8 @@ import { Tear } from "../Tear";
 
 export interface GlitchNoteTearData extends TearData {
   onHitEnemy?: (entity: EntityNPC) => void;
+  glitchTime?: number;
+  initializedColor?: boolean;
 }
 
 export class GlitchNoteTear extends Tear {
@@ -46,13 +48,42 @@ export class GlitchNoteTear extends Tear {
     spawnPoof(tear, EffectVariant.TEAR_POOF_B);
   }
 
-  private applyEffect(tear: EntityTear) {
+  private applyEffect(tear: EntityTear): void {
     const tearData = getData<GlitchNoteTearData>(tear);
+
+    tearData.glitchTime ??= 0;
+    tearData.glitchTime++;
+
     const rng = tear.GetDropRNG();
 
-    setTearColor(tear, tearData, rng);
+    if (!(tearData.initializedColor ?? false)) {
+      setTearColor(tear, tearData, rng);
+      tearData.initializedColor = true;
+    }
 
-    applyPositionJitter(tear, rng);
-    applyRotationShift(tear, rng);
+    const maxTime = 20;
+    const intensity = Math.min(tearData.glitchTime / maxTime, 1);
+
+    const minBrightness = 0.15;
+    const brightness = minBrightness + (1 - minBrightness) * (1 - intensity);
+
+    const originalColor = tearData.color;
+
+    tear.SetColor(
+      Color(
+        brightness * (originalColor?.R ?? 1),
+        brightness * (originalColor?.G ?? 1),
+        brightness * (originalColor?.B ?? 1),
+        1,
+        0,
+        0,
+        0,
+      ),
+      -1,
+      1000,
+    );
+
+    applyPositionJitter(tear, rng, intensity);
+    applyRotationShift(tear, rng, intensity);
   }
 }

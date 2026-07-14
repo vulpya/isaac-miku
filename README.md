@@ -22,9 +22,11 @@ Use her **Microphone** to inspire your audience!
 Due to losing her voice, she starts with only Glitch Notes.
 
 Enemies may drop **Lost Notes** when slain.
-Each **Note** grants a **different effect**.
+Each **Lost Note** grants a **different effect**.
 
 Use the **Broken Microphone** to switch melodies.
+
+With **Birthright** she loses even more control of her broken voice, firing multiple Lost Notes at onces.
 
 ## Mod Compatibility
 
@@ -37,11 +39,10 @@ For missing or wrong descriptions, please open a new Issue.
 ## Roadmap
 
 - Finish Tainted Miku.
-- Add Tainted Miku Birthright effect.
+- Sound Effects.
 - More Miku-themed items.
 - Improved sprites and animations.
 - Better visual effects.
-- Expanded mechanics and balance improvements.
 
 ## Disclaimer
 

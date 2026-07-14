@@ -9,6 +9,7 @@
 - [x] Add 'Passive Active Item' to switch between notes.
 - [x] Add Synergies to Tainted Miku. (e.g. Brimstone, Epic Fetus)
 - [ ] Add MCM Compat.
+- [ ] Setup Tests.
 
 ## TODO: Miku
 
@@ -31,5 +32,5 @@
   - [ ] TODO: Synergy ideas.
 - [x] Fix fire rate multiplier issues with several items.
   - [x] Fix Monstro's Lung.
-- [ ] Add Birthright for Tainted Miku.
+- [x] Add Birthright for Tainted Miku.
 - [ ] Add Tainted Miku Icons & Controls.

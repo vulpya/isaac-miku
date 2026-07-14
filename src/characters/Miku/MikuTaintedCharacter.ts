@@ -24,6 +24,7 @@ import {
   ModCallbackCustom,
   ReadonlyMap,
   spawnEffect,
+  spawnTear,
   VectorZero,
 } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
@@ -75,7 +76,9 @@ export interface TaintedMikuSaveData {
 
 const NAME = "Miku";
 const DESCRIPTION = "A twisted idol, using enemies as her melody.";
-const BIRTHRIGHT_DESC = "TODO";
+const BIRTHRIGHT_DESC =
+  "Her fractured melody splits apart, causing multiple Lost Notes to fire with every shot.";
+const BIRTHRIGHT_MULTI_SHOT = 5;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
@@ -175,41 +178,6 @@ export class MikuTaintedCharacter extends Character {
     }
   }
 
-  /**
-   * Called after Tainted Miku is initialized.
-   *
-   * Reads the mod save data to set the data for Tainted Miku on a continued run.
-   *
-   * @param player The player entity being initialized.
-   */
-  @Callback(ModCallback.POST_PLAYER_INIT, PlayerVariant.PLAYER)
-  override postPlayerInit(player: EntityPlayer): void {
-    super.postPlayerInit(player);
-    if (!isMiku(player, true)) {
-      return;
-    }
-
-    const saved = SAVE_DATA.mikuBs[player.ControllerIndex.toString()];
-    if (!saved) {
-      return;
-    }
-
-    const playerData = getData<TaintedMikuData>(player);
-
-    playerData.erased = saved.erased ?? [];
-    playerData.notes = saved.notes ?? [];
-    playerData.unlockedNotes = saved.unlockedNotes ?? [];
-    playerData.attackMode = saved.attackMode ?? MikuNoteMode.GLITCH;
-
-    playerData.storedCollectibles = new Set(saved.storedCollectibles ?? []);
-
-    for (const collectible of playerData.storedCollectibles) {
-      if (!player.HasCollectible(collectible)) {
-        player.AddCollectible(collectible);
-      }
-    }
-  }
-
   @CallbackCustom(
     ModCallbackCustom.POST_PLAYER_UPDATE_REORDERED,
     PlayerVariant.PLAYER,
@@ -248,6 +216,41 @@ export class MikuTaintedCharacter extends Character {
     }
   }
 
+  /**
+   * Called after Tainted Miku is initialized.
+   *
+   * Reads the mod save data to set the data for Tainted Miku on a continued run.
+   *
+   * @param player The player entity being initialized.
+   */
+  @Callback(ModCallback.POST_PLAYER_INIT, PlayerVariant.PLAYER)
+  override postPlayerInit(player: EntityPlayer): void {
+    super.postPlayerInit(player);
+    if (!isMiku(player, true)) {
+      return;
+    }
+
+    const saved = SAVE_DATA.mikuBs[player.ControllerIndex.toString()];
+    if (!saved) {
+      return;
+    }
+
+    const playerData = getData<TaintedMikuData>(player);
+
+    playerData.erased = saved.erased ?? [];
+    playerData.notes = saved.notes ?? [];
+    playerData.unlockedNotes = saved.unlockedNotes ?? [];
+    playerData.attackMode = saved.attackMode ?? MikuNoteMode.GLITCH;
+
+    playerData.storedCollectibles = new Set(saved.storedCollectibles ?? []);
+
+    for (const collectible of playerData.storedCollectibles) {
+      if (!player.HasCollectible(collectible)) {
+        player.AddCollectible(collectible);
+      }
+    }
+  }
+
   @Callback(ModCallback.EVALUATE_CACHE, CacheFlag.FIRE_DELAY)
   override cacheFireDelay(player: EntityPlayer): void {
     if (!isMiku(player, true)) {
@@ -277,6 +280,7 @@ export class MikuTaintedCharacter extends Character {
   @Callback(ModCallback.POST_FIRE_TEAR)
   override postFireTear(tear: EntityTear): void {
     const player = getPlayerFromEntity(tear);
+
     if (!player || !isMiku(player, true)) {
       return;
     }
@@ -292,21 +296,32 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    const note = notes[0];
-    if (!note) {
-      return;
-    }
+    const amount = player.HasCollectible(CollectibleType.BIRTHRIGHT)
+      ? BIRTHRIGHT_MULTI_SHOT
+      : 1;
 
-    const noteData = NOTE_TYPE_DATA[note.subType];
-    const tearData = getData<GlitchNoteTearData>(tear);
+    const activeNotes = notes.slice(0, amount);
 
-    noteData.applyEffect?.(player, tear);
-    noteData.onFireTear?.(player, tear);
-    tearData.color = noteData.color;
+    for (const [i, note] of activeNotes.entries()) {
+      let noteTear = tear;
 
-    note.remainingUses--;
-    if (note.remainingUses <= 0) {
-      notes.shift();
+      if (i > 0) {
+        noteTear = spawnTear(
+          tear.Variant,
+          tear.SubType,
+          tear.Position,
+          tear.Velocity,
+          player,
+        );
+
+        noteTear.CollisionDamage = tear.CollisionDamage;
+        noteTear.Scale = tear.Scale;
+      }
+
+      this.applyNoteEffect(player, noteTear, note);
+
+      const tearData = getData<GlitchNoteTearData>(noteTear);
+      setTearColor(noteTear, tearData, noteTear.GetDropRNG());
     }
   }
 
@@ -710,6 +725,27 @@ export class MikuTaintedCharacter extends Character {
         NAME,
         `Switched to Glitch mode because ${itemID} is disabled in Notes mode.`,
       );
+    }
+  }
+
+  private applyNoteEffect(
+    player: EntityPlayer,
+    tear: EntityTear,
+    note: NoteInstance,
+  ): void {
+    const noteData = NOTE_TYPE_DATA[note.subType];
+    const tearData = getData<GlitchNoteTearData>(tear);
+
+    noteData.applyEffect?.(player, tear);
+    noteData.onFireTear?.(player, tear);
+
+    tearData.color = noteData.color;
+
+    note.remainingUses--;
+
+    if (note.remainingUses <= 0) {
+      const playerData = getData<TaintedMikuData>(player);
+      playerData.notes = playerData.notes?.filter((n) => n !== note);
     }
   }
 }

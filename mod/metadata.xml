@@ -25,10 +25,11 @@ I get a lot of comments like the games not launching or the mod breaks the game.
 • Use her active item, the [b]Microphone[/b], to inspire your audience!
 
 [b]Tainted Miku (Work In Progress)[/b]
+• [NEW] Unique birthright effect.
 • Having lost her voice, she starts the run firing highly unstable [b]Glitch Notes[/b].
 • Slain enemies drop [b]Lost Notes[/b] onto the floor.
 • Collecting different Lost Notes grants various dynamic gameplay effects.
-• Use the [b]Broken Microphone[/b] to rapidly switch melodies.
+• Use the [b]Broken Microphone[/b] to switch between melodies.
 
 ----------------------------------------------------------------------
 [h2]Mod Compatibility[/h2]
@@ -58,6 +59,6 @@ This is a non-commercial, fan-made mod created as a personal project for fun. Al
 • [url=https://steamcommunity.com/profiles/76561198102520074]ale[/url] — For creating the amazing Miku/Vocaloid sprites!
 • [url=https://steamcommunity.com/id/thearexz]Arexz[/url] — For helping with custom sprite editing and refinement.
   </description>
-  <version>0.3.1</version>
+  <version>0.4.0</version>
   <visibility />
 </metadata>
