@@ -14,8 +14,7 @@
 ## TODO: Miku
 
 - [x] Balance Stats & charming chances + birthright fan chances.
-- [ ] Maybe add more default notes.
-  - [ ] Idea: On Enemy hit gets effect which leads the enemy to drop creep.
+- [x] Maybe add more default notes.
 - [ ] Add item synergies.
   - [ ] Maybe add Miku Leek synergy with Mom's Knife and/or Spirit Sword
 - [ ] Add charm blacklist, instead of just skipping over all bosses.
@@ -24,12 +23,13 @@
 
 ## TODO: Tainted Miku
 
-- [ ] Balance Stats and note drop rates.
-- [ ] Add more unique notes and balance them correctly.
+- [x] Balance Stats and note drop rates.
+- [x] Add more unique notes and balance them correctly.
 - [x] Add item synergies tied to special and unique note types.
   - [x] Add Brimstone Synergy
   - [x] Add Dr. Fetus Synergy
-  - [ ] TODO: Synergy ideas.
+  - [x] Add Eraser Synergy
+  - [ ] Add more... (need ideas ;\_;)
 - [x] Fix fire rate multiplier issues with several items.
   - [x] Fix Monstro's Lung.
 - [x] Add Birthright for Tainted Miku.

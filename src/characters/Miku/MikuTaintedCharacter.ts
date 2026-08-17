@@ -7,7 +7,6 @@ import {
   EffectVariant,
   EntityCollisionClass,
   ModCallback,
-  PickupVariant,
   PlayerVariant,
   SoundEffect,
 } from "isaac-typescript-definitions";
@@ -23,6 +22,8 @@ import {
   jsonEncode,
   ModCallbackCustom,
   ReadonlyMap,
+  removeCollectibleFromPools,
+  spawnCollectible,
   spawnEffect,
   spawnTear,
   VectorZero,
@@ -35,6 +36,7 @@ import {
   ITEM_SYNERGIES,
   NOTE_TYPE_DATA,
   NotePickupSubType,
+  SYNERGY_NOTES,
 } from "../../entities/pickups/NotePickup/NotePickupSubType";
 import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/GlitchNoteTear";
 import { CollectibleTypeCustom } from "../../items/enum";
@@ -61,7 +63,7 @@ import {
 export interface TaintedMikuData extends MikuPlayerData {
   attackMode?: MikuNoteMode;
   notes?: NoteInstance[];
-  unlockedNotes?: NotePickupSubType[];
+  unlockedSynergyNotes?: NotePickupSubType[];
   erased?: string[];
   storedCollectibles?: Set<CollectibleType>;
 }
@@ -69,7 +71,7 @@ export interface TaintedMikuData extends MikuPlayerData {
 export interface TaintedMikuSaveData {
   attackMode?: MikuNoteMode;
   notes?: NoteInstance[];
-  unlockedNotes?: NotePickupSubType[];
+  unlockedSynergyNotes?: NotePickupSubType[];
   erased?: string[];
   storedCollectibles?: CollectibleType[];
 }
@@ -82,11 +84,22 @@ const BIRTHRIGHT_MULTI_SHOT = 5;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
-const NOTE_DROP_CHANCE = 45;
+const NOTE_DROP_CHANCE = 40;
+const STARTING_NOTE_COUNT = 5;
 
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
   [CollectibleType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
+  [CollectibleType.ERASER]: CollectibleTypeCustom.RUBBER_NOTE,
+} as const;
+
+/** Replacement collectibles required to determine who can pick up synergy notes. */
+export const SYNERGY_NOTE_ITEMS: Partial<
+  Record<NotePickupSubType, CollectibleType>
+> = {
+  [NotePickupSubType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
+  [NotePickupSubType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
+  [NotePickupSubType.RUBBER]: CollectibleTypeCustom.RUBBER_NOTE,
 } as const;
 
 const ITEM_COSTUMES: Partial<Record<CollectibleType, CollectibleType>> = {
@@ -110,8 +123,8 @@ export class MikuTaintedCharacter extends Character {
   private font: Font | undefined = undefined;
 
   @CallbackCustom(ModCallbackCustom.POST_GAME_STARTED_REORDERED, true)
-  override onGameStart(isContinued: boolean): void {
-    if (!isContinued || !mod.HasData()) {
+  override onGameStart(): void {
+    if (!mod.HasData()) {
       return;
     }
 
@@ -134,8 +147,8 @@ export class MikuTaintedCharacter extends Character {
         attackMode: attackMode ?? MikuNoteMode.GLITCH,
         erased: erased ? [...erased] : [],
         notes: notes ? [...notes] : [],
-        unlockedNotes: playerData.unlockedNotes
-          ? [...playerData.unlockedNotes]
+        unlockedSynergyNotes: playerData.unlockedSynergyNotes
+          ? [...playerData.unlockedSynergyNotes]
           : [],
         storedCollectibles: storedCollectibles ? [...storedCollectibles] : [],
       };
@@ -147,7 +160,7 @@ export class MikuTaintedCharacter extends Character {
   /**
    * Called after Tainted Miku is initialized the first time.
    *
-   * Adds Tainted Miku's hair costume.
+   * Adds Tainted Miku's hair and patch costume.
    *
    * @param player The player entity being initialized.
    */
@@ -158,15 +171,16 @@ export class MikuTaintedCharacter extends Character {
   )
   override postPlayerInitFirst(player: EntityPlayer): void {
     const playerData = getData<TaintedMikuData>(player);
+
     playerData.hasIdol = false;
     playerData.attackMode = MikuNoteMode.GLITCH;
     playerData.notes = [];
     playerData.erased = [];
-    playerData.unlockedNotes = [];
+    playerData.unlockedSynergyNotes = [];
     playerData.storedCollectibles = new Set();
 
     player.AddNullCostume(HAIR);
-    Debugger.char(`${NAME} (Tainted)`, `Applied null costume: ${HAIR}`);
+    Debugger.char(`${NAME} (Tainted)`, `Applied null costume: ${HAIR}.`);
 
     player.AddCollectible(NULL_ITEM, 0);
     playerData.hasIdol = true;
@@ -174,8 +188,11 @@ export class MikuTaintedCharacter extends Character {
 
     if (!player.HasCollectible(POCKET_ACTIVE)) {
       player.SetPocketActiveItem(POCKET_ACTIVE, ActiveSlot.POCKET, false);
-      Debugger.char(NAME, "Give microphone pocket active item");
+      Debugger.char(NAME, "Give microphone pocket active item.");
     }
+
+    // Give Tainted Miku 5 random starting notes.
+    this.addStartingNotes(player, STARTING_NOTE_COUNT);
   }
 
   @CallbackCustom(
@@ -239,7 +256,7 @@ export class MikuTaintedCharacter extends Character {
 
     playerData.erased = saved.erased ?? [];
     playerData.notes = saved.notes ?? [];
-    playerData.unlockedNotes = saved.unlockedNotes ?? [];
+    playerData.unlockedSynergyNotes = saved.unlockedSynergyNotes ?? [];
     playerData.attackMode = saved.attackMode ?? MikuNoteMode.GLITCH;
 
     playerData.storedCollectibles = new Set(saved.storedCollectibles ?? []);
@@ -362,55 +379,63 @@ export class MikuTaintedCharacter extends Character {
     for (const player of players) {
       const playerData = getData<TaintedMikuData>(player);
       const { notes, attackMode } = playerData;
+
       if (!notes || notes.length === 0) {
         continue;
       }
 
-      // Determine HUD side
+      // Determine HUD side.
       const index = player.ControllerIndex;
       const isRightSide = controllerSides[index] ?? false;
 
-      // HUD layout config
+      // HUD layout config.
       const hudOffset = Options.HUDOffset;
       const hudX = hudOffset * 20;
 
       const startX = isRightSide ? 300 - hudX : 45 + hudX;
       const startY = 60;
+
       const spacing = 16;
       const baseSize = 14;
+
       const maxPerRow = 5;
       const maxRows = 2;
       const maxVisible = maxPerRow * maxRows;
 
+      // Load note sprite.
       if (!this.noteSprite) {
         this.noteSprite = Sprite();
         this.noteSprite.Load("gfx/pickups/note.anm2", true);
         this.noteSprite.Play("Idle", true);
       }
 
+      // Load active note sprite.
       if (!this.activeNoteSprite) {
         this.activeNoteSprite = Sprite();
         this.activeNoteSprite.Load("gfx/pickups/note.anm2", true);
         this.activeNoteSprite.Play("Idle", true);
       }
 
-      const RENDER_TEXT = false;
-
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (RENDER_TEXT && !this.font) {
+      // Load font.
+      if (!this.font) {
         this.font = Font();
         this.font.Load("font/pftempestasevencondensed.fnt");
       }
 
-      // Render notes HUD
+      // --------------------------------------------------
+      // Render note inventory.
+      // --------------------------------------------------
       const visibleNotes = notes.slice(0, maxVisible);
+
       for (const [i, note] of visibleNotes.entries()) {
         const row = Math.floor(i / maxPerRow);
         const col = i % maxPerRow;
+
         const x = startX + col * spacing;
         const y = startY + row * spacing;
 
         const noteConfig = NOTE_TYPE_DATA[note.subType];
+
         this.noteSprite.Scale =
           i === 0
             ? Vector((baseSize / 16) * 1.2, (baseSize / 16) * 1.2)
@@ -445,13 +470,16 @@ export class MikuTaintedCharacter extends Character {
         this.noteSprite.Render(Vector(x, y));
       }
 
+      // --------------------------------------------------
+      // Selected note above player
+      // --------------------------------------------------
+
       const game = Game();
       const hud = game.GetHUD();
 
       const isPausedCutscene =
         !hud.IsVisible() || game.GetRoom().GetFrameCount() < 5;
 
-      // Render 'selected' note above player.
       const activeNote = notes[0];
 
       if (
@@ -460,12 +488,14 @@ export class MikuTaintedCharacter extends Character {
         && !isPausedCutscene
       ) {
         const noteConfig = NOTE_TYPE_DATA[activeNote.subType];
+
         const screenPos: Vector = Isaac.WorldToScreen(player.Position);
 
         const floatX = screenPos.X;
         const floatY = screenPos.Y - 50;
 
         const pulse = 1 + Math.sin(Game().GetFrameCount() * 0.2) * 0.08;
+
         const breath = 0.85 + Math.sin(Game().GetFrameCount() * 0.1) * 0.15;
 
         this.activeNoteSprite.Scale = Vector(pulse, pulse);
@@ -498,38 +528,39 @@ export class MikuTaintedCharacter extends Character {
 
         this.activeNoteSprite.Render(Vector(floatX, floatY));
 
-        if (this.font !== undefined) {
-          const text = `${activeNote.remainingUses}`;
-          const textScale = 0.5;
-          const textX = floatX + 6;
-          const textY = floatY + 6;
+        // Remaining uses text.
+        const text = `${activeNote.remainingUses}`;
+        const textScale = 0.5;
 
-          // shadow
-          this.font.DrawStringScaled(
-            text,
-            textX + 1,
-            textY + 1,
-            textScale,
-            textScale,
-            KColor(0, 0, 0, 1),
-            0,
-            true,
-          );
+        const textX = floatX + 6;
+        const textY = floatY + 6;
 
-          // main
-          this.font.DrawStringScaled(
-            text,
-            textX,
-            textY,
-            textScale,
-            textScale,
-            KColor(1, 1, 1, 1),
-            0,
-            true,
-          );
-        }
+        // Shadow.
+        this.font.DrawStringScaled(
+          text,
+          textX + 1,
+          textY + 1,
+          textScale,
+          textScale,
+          KColor(0, 0, 0, 1),
+          0,
+          true,
+        );
+
+        // Main text.
+        this.font.DrawStringScaled(
+          text,
+          textX,
+          textY,
+          textScale,
+          textScale,
+          KColor(1, 1, 1, 1),
+          0,
+          true,
+        );
       }
 
+      // Update collectible costumes.
       updateCollectibleCostumes(player, ITEM_COSTUMES);
     }
   }
@@ -579,25 +610,35 @@ export class MikuTaintedCharacter extends Character {
 
     for (const player of getPlayersOfType(PlayerTypeCustom.MIKU_B)) {
       const data = getData<TaintedMikuData>(player);
-      for (const note of data.unlockedNotes ?? []) {
+
+      for (const note of data.unlockedSynergyNotes ?? []) {
         unlocked.add(note);
       }
     }
 
-    const unlockedArray = [...unlocked];
+    const noteSubTypes = Object.values(NotePickupSubType).filter(
+      (value): value is NotePickupSubType => {
+        if (typeof value !== "number") {
+          return false;
+        }
 
-    const baseNotes = Object.values(NotePickupSubType).filter(
-      (v): v is NotePickupSubType =>
-        typeof v === "number" && NOTE_TYPE_DATA[v].weight > 0,
+        const config = NOTE_TYPE_DATA[value];
+
+        if (config.weight <= 0) {
+          return false;
+        }
+
+        if (!SYNERGY_NOTES.has(value)) {
+          return true;
+        }
+
+        // Add synergy notes if available.
+        return unlocked.has(value);
+      },
     );
 
-    const noteSubTypes = [
-      ...baseNotes,
-      ...unlockedArray.filter((n) => !baseNotes.includes(n)),
-    ];
-
-    const weights = noteSubTypes.map((s) =>
-      unlockedArray.includes(s) ? 2 : NOTE_TYPE_DATA[s].weight,
+    const weights = noteSubTypes.map(
+      (subType) => NOTE_TYPE_DATA[subType].weight,
     );
 
     const note = rollWeighted(
@@ -612,20 +653,137 @@ export class MikuTaintedCharacter extends Character {
     }
   }
 
-  @Callback(ModCallback.PRE_PICKUP_COLLISION, PickupVariant.COLLECTIBLE)
+  @CallbackCustom(ModCallbackCustom.POST_PLAYER_UPDATE_REORDERED)
+  debugSpawnAllNotes(player: EntityPlayer): void {
+    if (!isMiku(player, true)) {
+      return;
+    }
+
+    if (!Input.IsActionTriggered(ButtonAction.BOMB, player.ControllerIndex)) {
+      return;
+    }
+
+    const noteSubTypes = Object.values(NotePickupSubType).filter(
+      (value): value is NotePickupSubType => typeof value === "number",
+    );
+
+    const roomCenter = Game().GetRoom().GetCenterPos();
+    const spacing = 20;
+    const totalWidth = (noteSubTypes.length - 1) * spacing;
+    const startX = roomCenter.X - totalWidth / 2;
+
+    for (const [index, subType] of noteSubTypes.entries()) {
+      const position = Vector(startX + index * spacing, roomCenter.Y);
+
+      spawnNotePickup(subType, position);
+    }
+
+    Debugger.char(
+      NAME,
+      `Spawned all ${noteSubTypes.length} note pickups, including synergy notes.`,
+    );
+  }
+
+  // @CallbackCustom(ModCallbackCustom.POST_PLAYER_UPDATE_REORDERED)
+  debugSpawnShopItem(player: EntityPlayer): void {
+    if (!isMiku(player, true)) {
+      return;
+    }
+
+    // Press the DROP button to spawn test item.
+    if (!Input.IsActionTriggered(ButtonAction.DROP, player.ControllerIndex)) {
+      return;
+    }
+
+    const pickup = spawnCollectible(
+      CollectibleType.ERASER,
+      player.Position,
+      player.GetDropRNG(),
+    ).ToPickup();
+
+    if (!pickup) {
+      return;
+    }
+
+    pickup.Price = 15;
+    pickup.ShopItemId = 1;
+
+    Debugger.char(NAME, "Spawned test Eraser shop item for 15¢.");
+  }
+
+  @CallbackCustom(ModCallbackCustom.POST_PLAYER_COLLECTIBLE_ADDED)
+  postAddCollectible(
+    player: EntityPlayer,
+    collectibleType: CollectibleType,
+  ): void {
+    if (!isMiku(player, true)) {
+      return;
+    }
+
+    const synergyNote = ITEM_SYNERGIES[collectibleType];
+    const replaceItem = ITEM_REPLACEMENTS[collectibleType];
+
+    if (synergyNote === undefined || replaceItem === undefined) {
+      return;
+    }
+
+    const data = getData<TaintedMikuData>(player);
+
+    data.unlockedSynergyNotes ??= [];
+
+    if (!data.unlockedSynergyNotes.includes(synergyNote)) {
+      data.unlockedSynergyNotes.push(synergyNote);
+
+      // TODO: Add better way to make this less hard coded.
+      if (collectibleType === CollectibleType.ERASER) {
+        data.storedCollectibles ??= new Set();
+        data.storedCollectibles.add(CollectibleType.ERASER);
+
+        removeCollectibleFromPools(collectibleType);
+      }
+    }
+
+    player.RemoveCollectible(collectibleType);
+    player.AddCollectible(replaceItem);
+
+    spawnNotePickup(synergyNote, player.Position);
+
+    SFXManager().Play(SoundEffect.POWER_UP_SPEWER);
+    spawnEffect(EffectVariant.POOF_1, 0, player.Position, VectorZero);
+  }
+
+  @Callback(ModCallback.PRE_PICKUP_COLLISION)
   prePickupCollision(
     pickup: EntityPickup,
     collider: Entity,
     _low: boolean,
   ): boolean | undefined {
     const player = getPlayerFromEntity(collider);
+
     if (!player || !isMiku(player, true)) {
       return undefined;
     }
 
-    const data = getData<TaintedMikuData>(player);
+    // Synergy note pickups require the corresponding replacement item.
+    const synergyRequiredItem =
+      SYNERGY_NOTE_ITEMS[pickup.SubType as NotePickupSubType];
+
+    if (
+      synergyRequiredItem !== undefined
+      && !player.HasCollectible(synergyRequiredItem)
+    ) {
+      return false;
+    }
 
     const itemID = pickup.SubType as CollectibleType;
+
+    if (
+      itemID === CollectibleType.ERASER
+      && player.HasCollectible(CollectibleTypeCustom.RUBBER_NOTE)
+    ) {
+      return false;
+    }
+
     const synergyNote = ITEM_SYNERGIES[itemID];
     const replaceItem = ITEM_REPLACEMENTS[itemID];
 
@@ -635,10 +793,155 @@ export class MikuTaintedCharacter extends Character {
       return undefined;
     }
 
-    data.unlockedNotes ??= [];
+    if (pickup.Price > 0) {
+      return undefined;
+    }
 
-    if (!data.unlockedNotes.includes(synergyNote)) {
-      data.unlockedNotes.push(synergyNote);
+    this.replaceWithNote(player, pickup, synergyNote, replaceItem);
+
+    return undefined;
+  }
+
+  /**
+   * Checks whether the specified collectible is disabled while Tainted Miku is using Notes mode.
+   *
+   * If the item is disabled, switches Tainted Miku back to Glitch mode.
+   *
+   * @param player The player character entity.
+   * @param itemID The collectible being checked.
+   */
+  private checkDisabledItem(
+    player: EntityPlayer,
+    itemID: CollectibleType,
+  ): void {
+    const data = getData<TaintedMikuData>(player);
+
+    if (isNoteItemDisabled(itemID) && data.attackMode !== MikuNoteMode.GLITCH) {
+      setMikuAttackMode(player, MikuNoteMode.GLITCH);
+
+      Debugger.char(
+        NAME,
+        `Switched to Glitch mode because ${itemID} is disabled in Notes mode.`,
+      );
+    }
+  }
+
+  /**
+   * Applies the effects of a note to a fired tear.
+   *
+   * Triggers the note's tear effects, updates the tear's color, and consumes one use of the note.
+   * Removes the note from Tainted Miku's note inventory when all of its uses have been consumed.
+   *
+   * @param player The player entity firing the tear.
+   * @param tear The tear receiving the note's effects.
+   * @param note The note being consumed.
+   */
+  private applyNoteEffect(
+    player: EntityPlayer,
+    tear: EntityTear,
+    note: NoteInstance,
+  ): void {
+    const noteData = NOTE_TYPE_DATA[note.subType];
+    const tearData = getData<GlitchNoteTearData>(tear);
+
+    noteData.applyEffect?.(player, tear);
+    noteData.onFireTear?.(player, tear);
+
+    tearData.color = noteData.color;
+
+    note.remainingUses--;
+
+    if (note.remainingUses <= 0) {
+      const playerData = getData<TaintedMikuData>(player);
+      playerData.notes = playerData.notes?.filter((n) => n !== note);
+    }
+  }
+
+  /**
+   * Adds a number of random non-synergy notes to Tainted Miku's inventory.
+   *
+   * Notes are selected using their configured weights and are removed from the available pool after
+   * being selected to prevent duplicates.
+   *
+   * @param player The player entity receiving the notes.
+   * @param amount The maximum number of starting notes to add.
+   */
+  private addStartingNotes(player: EntityPlayer, amount: number): void {
+    const playerData = getData<TaintedMikuData>(player);
+
+    playerData.notes ??= [];
+
+    const availableNotes = Object.values(NotePickupSubType).filter(
+      (value): value is NotePickupSubType => {
+        if (typeof value !== "number") {
+          return false;
+        }
+
+        if (SYNERGY_NOTES.has(value)) {
+          return false;
+        }
+
+        return NOTE_TYPE_DATA[value].weight > 0;
+      },
+    );
+
+    const rng = player.GetDropRNG();
+    const notesToAdd = Math.min(amount, availableNotes.length);
+
+    for (let i = 0; i < notesToAdd; i++) {
+      const weights = availableNotes.map(
+        (subType) => NOTE_TYPE_DATA[subType].weight,
+      );
+
+      const noteSubType = rollWeighted(availableNotes, weights, rng, 100);
+
+      if (noteSubType === undefined) {
+        break;
+      }
+
+      const config = NOTE_TYPE_DATA[noteSubType];
+
+      playerData.notes.push({
+        subType: noteSubType,
+        remainingUses: config.uses,
+      });
+
+      // Prevent this note from being selected again.
+      const index = availableNotes.indexOf(noteSubType);
+      if (index !== -1) {
+        availableNotes.splice(index, 1);
+      }
+    }
+
+    Debugger.char(
+      NAME,
+      `Added ${playerData.notes.length} random starting notes.`,
+    );
+  }
+
+  /**
+   * Replaces a collectible pickup with its corresponding synergy note.
+   *
+   * Unlocks the synergy note, gives Tainted Miku the replacement collectible, plays the collection
+   * animation, effects and spawns an associated note pickup.
+   *
+   * @param player The player entity collecting the item.
+   * @param pickup The collectible pickup being replaced.
+   * @param synergyNote The synergy note unlocked by the collectible.
+   * @param replaceItem The replacement collectible given to the player.
+   */
+  private replaceWithNote(
+    player: EntityPlayer,
+    pickup: EntityPickup,
+    synergyNote: NotePickupSubType,
+    replaceItem: CollectibleType,
+  ): void {
+    const data = getData<TaintedMikuData>(player);
+
+    data.unlockedSynergyNotes ??= [];
+
+    if (!data.unlockedSynergyNotes.includes(synergyNote)) {
+      data.unlockedSynergyNotes.push(synergyNote);
     }
 
     player.AnimateCollectible(replaceItem);
@@ -646,15 +949,13 @@ export class MikuTaintedCharacter extends Character {
 
     pickup.EntityCollisionClass = EntityCollisionClass.NONE;
     pickup.GetSprite().Play("Collect", true);
-
     pickup.Timeout = 2;
 
     SFXManager().Play(SoundEffect.POWER_UP_SPEWER);
 
     spawnEffect(EffectVariant.POOF_1, 0, pickup.Position, VectorZero);
-    spawnNotePickup(synergyNote, player.Position);
 
-    return undefined;
+    spawnNotePickup(synergyNote, player.Position);
   }
 
   /**
@@ -710,42 +1011,13 @@ export class MikuTaintedCharacter extends Character {
       `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible52}} Dr. Fetus#{{Collectible${CollectibleTypeCustom.DR_FETUS_NOTE}}} Dr. Fetus Explosive Notes can now drop from enemies`,
       () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
     );
-  }
 
-  private checkDisabledItem(
-    player: EntityPlayer,
-    itemID: CollectibleType,
-  ): void {
-    const data = getData<TaintedMikuData>(player);
-
-    if (isNoteItemDisabled(itemID) && data.attackMode !== MikuNoteMode.GLITCH) {
-      setMikuAttackMode(player, MikuNoteMode.GLITCH);
-
-      Debugger.char(
-        NAME,
-        `Switched to Glitch mode because ${itemID} is disabled in Notes mode.`,
-      );
-    }
-  }
-
-  private applyNoteEffect(
-    player: EntityPlayer,
-    tear: EntityTear,
-    note: NoteInstance,
-  ): void {
-    const noteData = NOTE_TYPE_DATA[note.subType];
-    const tearData = getData<GlitchNoteTearData>(tear);
-
-    noteData.applyEffect?.(player, tear);
-    noteData.onFireTear?.(player, tear);
-
-    tearData.color = noteData.color;
-
-    note.remainingUses--;
-
-    if (note.remainingUses <= 0) {
-      const playerData = getData<TaintedMikuData>(player);
-      playerData.notes = playerData.notes?.filter((n) => n !== note);
-    }
+    appendToDescription(
+      eid,
+      "Eraser",
+      PlayerTypeCustom.MIKU_B,
+      `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible638}} Eraser#{{Collectible${CollectibleTypeCustom.RUBBER_NOTE}}} Rubber Notes can permanently erase enemies.#{{Warning}} Doesn't work on bosses.`,
+      () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
+    );
   }
 }

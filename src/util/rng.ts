@@ -190,7 +190,7 @@ export const rollWeighted = <T>(
     return undefined;
   }
 
-  const safeWeights = weights.map((w) => (w <= 0 ? 0.0001 : w));
+  const safeWeights = weights.map((w) => Math.max(0, w));
   const totalWeight = safeWeights.reduce((sum, w) => sum + w, 0);
 
   const roll = getRandomFloat(0, totalWeight, rng);

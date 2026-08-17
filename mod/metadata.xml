@@ -8,9 +8,12 @@
 
 A standalone character mod for The Binding of Isaac featuring Hatsune Miku and her tainted counterpart!
 
-[h1]TAINTED MIKU FIXED FOR VANILLA[/h1]
+[h1]VERSION 0.4 OUT NOW![/h1]
 
-Now when playing Vanilla Rep+, Tainted Miku's Lost Notes drops should work as intended!
+I fixed many bugs with Tainted Miku, especially in Vanilla Rep+, but Miku also got some small addition.
+With the Microphone, you can now permanently charm Angels (hopefully without breaking the key pieces.. ;_;)
+
+And I added a small Birthright Effect for Tainted Miku until I got more time and ideas for a really special and interesting effect.
 
 [h1]INFO[/h1]
 I get a lot of comments like the games not launching or the mod breaks the game. Make sure you have all DLCs!
@@ -22,7 +25,7 @@ I get a lot of comments like the games not launching or the mod breaks the game.
 • Attacks with her voice with tears that resemble notes.
 • Each hit has a chance to [b]Charm[/b] enemies.
 • [b]Birthright Effect:[/b] Charmed enemies have a chance to permanently become your loyal [b]Fans[/b]! (until they die)
-• Use her active item, the [b]Microphone[/b], to inspire your audience!
+• Use her active item, the [b]Microphone[/b], to inspire your audience! (Some say you can even charm angels with it)
 
 [b]Tainted Miku (Work In Progress)[/b]
 • [NEW] Unique birthright effect.
@@ -41,6 +44,7 @@ I get a lot of comments like the games not launching or the mod breaks the game.
 [h2]Planned[/h2]
 
 • Finish and balance Tainted Miku's core gameplay loop.
+• Custom Sound Effects.
 • Implement a unique Birthright effect for Tainted Miku.
 • Design and add more Miku-themed items to the item pools.
 • Upgrade custom sprites, animations, and special visual effects.
