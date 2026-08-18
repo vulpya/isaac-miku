@@ -32,7 +32,7 @@ import {
   midasFreezeEnemy,
 } from "../../../util/enemies";
 import { rollChance } from "../../../util/rng";
-import type { GlitchNoteTearData } from "../../tears/GlitchNoteTear/GlitchNoteTear";
+import type { BloodNoteTearData } from "../../tears/BloodNoteTear/BloodNoteTear";
 import type { NoteTypeConfig } from "./NotePickup";
 
 const ENEMY_FREEZE_DURATION = 3;
@@ -48,13 +48,12 @@ const ENEMY_MIDAS_DURATION = 3;
 const ENEMY_MIDAS_CHANCE = 20;
 
 const ENEMY_LUCKY_PENNY_CHANCE = 1;
-
-const LUCKY_NOTE_PENNY_DROP_CHANCE = 1;
+const ENEMY_LUCKY_NOTE_PENNY_DROP_CHANCE = 1;
 
 const BRIMSTONE_NOTE_DAMAGE_MULTIPLIER = 3.5;
 const DR_FETUS_NOTE_DAMAGE_MULTIPLIER = 3.5;
 
-/** Represents the different subtypes of musical note pickups. */
+/** Represents the different subtypes of lost note pickups. */
 export enum NotePickupSubType {
   LOVE = 1,
   FIRE,
@@ -68,7 +67,7 @@ export enum NotePickupSubType {
   // SYNERGIES
   BRIMSTONE,
   DR_FETUS,
-  RUBBER,
+  ERASER,
 }
 
 /** Items that unlock a corresponding synergy note. */
@@ -77,7 +76,7 @@ export const ITEM_SYNERGIES: Partial<
 > = {
   [CollectibleType.BRIMSTONE]: NotePickupSubType.BRIMSTONE,
   [CollectibleType.DR_FETUS]: NotePickupSubType.DR_FETUS,
-  [CollectibleType.ERASER]: NotePickupSubType.RUBBER,
+  [CollectibleType.ERASER]: NotePickupSubType.ERASER,
 } as const;
 
 /** All notes that require an item before they can begin appearing in the note pool. */
@@ -88,8 +87,6 @@ export const SYNERGY_NOTES = new Set<NotePickupSubType>(
 /**
  * Weight: Higher = more common. Lower = rarer.
  *
- * Uses: Number of attacks before the note is consumed.
- *
  * Synergy notes intentionally have lower weights because:
  *   1. They are unlocked by powerful items.
  *   2. Their effects are significantly stronger than normal notes.
@@ -97,13 +94,13 @@ export const SYNERGY_NOTES = new Set<NotePickupSubType>(
 export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
   [NotePickupSubType.LOVE]: {
     name: "Love Note",
-    description: "{{Charm}} Permanently charms enemies.",
+    description: "{{Charm}} Tears permanently charms enemies.",
     color: Color(0.85, 0.25, 0.25, 1, 0, 0, 0),
     weight: 0.4,
     uses: 1,
 
     applyEffect: (_player: EntityPlayer, tear: EntityTear) => {
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isCharmable(enemy)) {
@@ -117,7 +114,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
   [NotePickupSubType.FIRE]: {
     name: "Blazing Note",
     description:
-      "{{Burning}} Burns enemies over time.#{{Warning}} Burning enemies explode on death.",
+      "{{Burning}} Tears burn enemies over time.#{{Warning}} Burning enemies explode on death.",
     color: Color(1, 0.5, 0.15, 1, 0, 0, 0),
     weight: 0.75,
     uses: 2,
@@ -125,7 +122,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     applyEffect: (_player, tear) => {
       tear.AddTearFlags(TearFlag.BURN);
 
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isBurnable(enemy)) {
@@ -144,7 +141,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     uses: 2,
 
     applyEffect: (_player: EntityPlayer, tear: EntityTear) => {
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isFreezable(enemy)) {
@@ -158,7 +155,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
   [NotePickupSubType.TOXIC]: {
     name: "Toxic Note",
     description:
-      "{{Poison}} Tears poisons enemies and causes tears to explode on impact.#{{Warning}} Explosions can damage you.",
+      "{{Poison}} Tears poison enemies and causes tears to explode on impact.#{{Warning}} Explosions can damage you.",
     color: Color(0.12, 0.65, 0.18, 1, 0, 0, 0),
     weight: 0.5,
     uses: 1,
@@ -178,7 +175,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
       tear.AddTearFlags(TearFlag.CONFUSION);
       tear.AddTearFlags(TearFlag.FEAR);
 
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isActiveEnemy(enemy)) {
@@ -214,13 +211,13 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     name: "Greedy Note",
     description: `{{Coin}} Tears have a ${ENEMY_MIDAS_CHANCE}% chance to turn enemies into {{ColorGold}}gold{{CR}}.`,
     color: Color(1, 0.78, 0.15, 1, 0, 0, 0),
-    weight: 0.65,
-    uses: 3,
+    weight: 0.45,
+    uses: 2,
 
     applyEffect: (player, tear) => {
       tear.AddTearFlags(TearFlag.MIDAS);
 
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (
@@ -242,14 +239,15 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     uses: 3,
 
     applyEffect: (player, tear) => {
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isActiveEnemy(enemy)) {
           return;
         }
 
-        const chance = LUCKY_NOTE_PENNY_DROP_CHANCE + Math.max(0, player.Luck);
+        const chance =
+          ENEMY_LUCKY_NOTE_PENNY_DROP_CHANCE + Math.max(0, player.Luck);
 
         if (!rollChance(chance, player.GetDropRNG())) {
           return;
@@ -339,13 +337,13 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
 
   /**
    * ----------------------------------------------------------
-   * RUBBER NOTE
+   * ERASER NOTE
    * ----------------------------------------------------------
    * It does not work against:
    * - Bosses
    * - Invincible enemies
    */
-  [NotePickupSubType.RUBBER]: {
+  [NotePickupSubType.ERASER]: {
     name: "Rubber Note",
     description:
       "{{Collectible638}} Permanently erases enemies.#{{Warning}} Doesn't work on bosses.",
@@ -354,7 +352,7 @@ export const NOTE_TYPE_DATA: Record<NotePickupSubType, NoteTypeConfig> = {
     uses: 1,
 
     applyEffect: (player: EntityPlayer, tear: EntityTear) => {
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
 
       tearData.onHitEnemy = (enemy: EntityNPC) => {
         if (!isActiveEnemy(enemy) || enemy.IsBoss() || enemy.IsInvincible()) {

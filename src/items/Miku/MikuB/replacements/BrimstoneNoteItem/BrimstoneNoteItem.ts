@@ -4,7 +4,8 @@ import { CollectibleTypeCustom } from "../../../../enum";
 import { Item } from "../../../../Item";
 
 const NAME = "Brimstone Note";
-const DESCRIPTION = `Replaces {{Collectible118}} Brimstone#{{Collectible${CollectibleTypeCustom.BRIMSTONE_NOTE}}} Brimstone Notes can now drop from enemies`;
+const DESCRIPTION =
+  "{{Collectible118}} Brimstone Notes can now drop from enemies.";
 
 export class BrimstoneNoteItem extends Item {
   override setupEID(eid: EIDExtended): void {

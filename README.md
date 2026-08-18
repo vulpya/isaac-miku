@@ -1,32 +1,43 @@
 # Hatsune Miku (+Tainted)
 
-[![Build](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml) ![Isaac](https://img.shields.io/badge/Game-The%20Binding%20of%20Isaac-darkred) ![Character Mod](https://img.shields.io/badge/Type-Character%20Mod-blue) ![Miku](https://img.shields.io/badge/Vocaloid-Hatsune%20Miku-39C5BB)
+[![Build](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/vulpya/isaac-miku/actions/workflows/build.yml)
 
-A standalone character mod for The Binding of Isaac featuring Hatsune Miku and her tainted counterpart.
+A character mod for **The Binding of Isaac: Repentance** featuring Hatsune Miku and her Tainted counterpart.
 
-## Features
+## Miku
 
-### Miku
+Miku attacks by singing, firing musical **Notes** at her enemies.
 
-Attacks with her Voice in form of Note Tears.
-Notes may charm enemies.
+### Charming
 
-With **Birthright**, charmed enemies may become Fans.
+Miku's notes have a chance to **charm enemies**, causing them to fight alongside her temporarily.
 
-Use her **Microphone** to inspire your audience!
+With **Birthright**, charmed enemies can become permanent **Fans**, joining Miku as allies and fighting alongside her.
 
-### Tainted Miku
+### Microphone
 
-**Tainted Miku is Work in Progress and not really balanced / fletched out!**
+Miku starts with her **Microphone**, which can be used to inspire her audience and support her unique playstyle.
 
-Due to losing her voice, she starts with only Glitch Notes.
+## Tainted Miku
 
-Enemies may drop **Lost Notes** when slain.
-Each **Lost Note** grants a **different effect**.
+> **Work in progress**
 
-Use the **Broken Microphone** to switch melodies.
+Tainted Miku's voice has been broken, leaving her unable to produce ordinary Notes. Instead, she attacks with **Bloody Notes**.
 
-With **Birthright** she loses even more control of her broken voice, firing multiple Lost Notes at onces.
+### Lost Notes
+
+Enemies can drop one of **8 unique Lost Notes**.
+
+Each **Lost Note** changes the properties of Miku's tears, giving her a different way to fight. Collecting **Lost Notes** temporarily repairs her broken voice and builds her moveset throughout the basement.
+
+### Special Synergy Notes
+
+Certain items are transformed into **Special Synergy Notes**, granting unique effects based on the item they replace.
+
+### Birthright
+
+With **Birthright**, Tainted Miku further distorts her fractured melody, causing multiple **Lost Note**
+effects to trigger with each shot.
 
 ## Mod Compatibility
 
@@ -34,15 +45,18 @@ With **Birthright** she loses even more control of her broken voice, firing mult
 
 This mod includes support for External Item Descriptions.
 
-For missing or wrong descriptions, please open a new Issue.
+For missing or incorrect descriptions, please open a new Issue.
 
-## Roadmap
+### Mod Config Menu Support
 
-- Finish Tainted Miku.
-- Sound Effects.
-- More Miku-themed items.
-- Improved sprites and animations.
-- Better visual effects.
+This mod includes support for Mod Config Menu.
+
+MCM options include:
+
+- **Show Note Counter** — Show or hide the counter of the selected Note above Tainted Miku.
+- **Note Drop Chance** — Configure the drop chance of Lost Notes from 0% to 100%.
+
+For MCM-related issues, please open a new Issue.
 
 ## Disclaimer
 

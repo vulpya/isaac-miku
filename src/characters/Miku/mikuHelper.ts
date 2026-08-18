@@ -3,7 +3,7 @@ import { getData } from "../../util/data";
 import type { TaintedMikuData } from "./MikuTaintedCharacter";
 
 export enum MikuAttackMode {
-  GLITCH,
+  EMPTY,
   VOICES,
 }
 

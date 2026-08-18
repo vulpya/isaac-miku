@@ -30,6 +30,7 @@ import {
 } from "isaacscript-common";
 import type { EIDExtended } from "../../compat/EID";
 import { appendToDescription } from "../../compat/EID";
+import { getShowNoteCounter, isMCMOpen } from "../../compat/MCM";
 import { spawnNotePickup } from "../../entities/pickups/helper";
 import type { NoteInstance } from "../../entities/pickups/NotePickup/NotePickup";
 import {
@@ -38,7 +39,7 @@ import {
   NotePickupSubType,
   SYNERGY_NOTES,
 } from "../../entities/pickups/NotePickup/NotePickupSubType";
-import type { GlitchNoteTearData } from "../../entities/tears/GlitchNoteTear/GlitchNoteTear";
+import type { BloodNoteTearData } from "../../entities/tears/BloodNoteTear/BloodNoteTear";
 import { CollectibleTypeCustom } from "../../items/enum";
 import { mod } from "../../mod";
 import { maxFireDelayToTears, tearsToMaxFireDelay } from "../../util/calc";
@@ -81,7 +82,9 @@ const DESCRIPTION = "A twisted idol, using enemies as her melody.";
 const BIRTHRIGHT_DESC =
   "Her fractured melody splits apart, causing multiple Lost Notes to fire with every shot.";
 const BIRTHRIGHT_MULTI_SHOT = 5;
-const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");
+const HAIR = Isaac.GetCostumeIdByPath(
+  "gfx/characters/Character_MikuHead_b.anm2",
+);
 const POCKET_ACTIVE = CollectibleTypeCustom.BROKEN_VOICE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
 const NOTE_DROP_CHANCE = 40;
@@ -90,7 +93,12 @@ const STARTING_NOTE_COUNT = 5;
 const ITEM_REPLACEMENTS: Partial<Record<CollectibleType, CollectibleType>> = {
   [CollectibleType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
   [CollectibleType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
-  [CollectibleType.ERASER]: CollectibleTypeCustom.RUBBER_NOTE,
+  [CollectibleType.ERASER]: CollectibleTypeCustom.ERASER_NOTE,
+} as const;
+
+const ITEM_COSTUMES: Partial<Record<CollectibleType, CollectibleType>> = {
+  [CollectibleTypeCustom.BRIMSTONE_NOTE]: CollectibleType.BRIMSTONE,
+  [CollectibleTypeCustom.DR_FETUS_NOTE]: CollectibleType.DR_FETUS,
 } as const;
 
 /** Replacement collectibles required to determine who can pick up synergy notes. */
@@ -99,12 +107,7 @@ export const SYNERGY_NOTE_ITEMS: Partial<
 > = {
   [NotePickupSubType.BRIMSTONE]: CollectibleTypeCustom.BRIMSTONE_NOTE,
   [NotePickupSubType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
-  [NotePickupSubType.RUBBER]: CollectibleTypeCustom.RUBBER_NOTE,
-} as const;
-
-const ITEM_COSTUMES: Partial<Record<CollectibleType, CollectibleType>> = {
-  [CollectibleTypeCustom.BRIMSTONE_NOTE]: CollectibleType.BRIMSTONE,
-  [CollectibleTypeCustom.DR_FETUS_NOTE]: CollectibleType.DR_FETUS,
+  [NotePickupSubType.ERASER]: CollectibleTypeCustom.ERASER_NOTE,
 } as const;
 
 export const MIKU_B_STATS = new ReadonlyMap<CacheFlag, float>([
@@ -135,7 +138,7 @@ export class MikuTaintedCharacter extends Character {
 
   @Callback(ModCallback.PRE_GAME_EXIT)
   override onGameExit(): void {
-    SAVE_DATA.mikuBs = {};
+    SAVE_DATA.miku_b_players = {};
 
     const players = getPlayersOfType(PlayerTypeCustom.MIKU_B);
     for (const player of players) {
@@ -143,8 +146,8 @@ export class MikuTaintedCharacter extends Character {
 
       const { erased, notes, attackMode, storedCollectibles } = playerData;
 
-      SAVE_DATA.mikuBs[player.ControllerIndex.toString()] = {
-        attackMode: attackMode ?? MikuNoteMode.GLITCH,
+      SAVE_DATA.miku_b_players[player.ControllerIndex.toString()] = {
+        attackMode: attackMode ?? MikuNoteMode.EMPTY,
         erased: erased ? [...erased] : [],
         notes: notes ? [...notes] : [],
         unlockedSynergyNotes: playerData.unlockedSynergyNotes
@@ -173,7 +176,7 @@ export class MikuTaintedCharacter extends Character {
     const playerData = getData<TaintedMikuData>(player);
 
     playerData.hasIdol = false;
-    playerData.attackMode = MikuNoteMode.GLITCH;
+    playerData.attackMode = MikuNoteMode.EMPTY;
     playerData.notes = [];
     playerData.erased = [];
     playerData.unlockedSynergyNotes = [];
@@ -191,7 +194,6 @@ export class MikuTaintedCharacter extends Character {
       Debugger.char(NAME, "Give microphone pocket active item.");
     }
 
-    // Give Tainted Miku 5 random starting notes.
     this.addStartingNotes(player, STARTING_NOTE_COUNT);
   }
 
@@ -247,7 +249,7 @@ export class MikuTaintedCharacter extends Character {
       return;
     }
 
-    const saved = SAVE_DATA.mikuBs[player.ControllerIndex.toString()];
+    const saved = SAVE_DATA.miku_b_players[player.ControllerIndex.toString()];
     if (!saved) {
       return;
     }
@@ -257,7 +259,7 @@ export class MikuTaintedCharacter extends Character {
     playerData.erased = saved.erased ?? [];
     playerData.notes = saved.notes ?? [];
     playerData.unlockedSynergyNotes = saved.unlockedSynergyNotes ?? [];
-    playerData.attackMode = saved.attackMode ?? MikuNoteMode.GLITCH;
+    playerData.attackMode = saved.attackMode ?? MikuNoteMode.EMPTY;
 
     playerData.storedCollectibles = new Set(saved.storedCollectibles ?? []);
 
@@ -280,20 +282,6 @@ export class MikuTaintedCharacter extends Character {
     }
   }
 
-  @Callback(ModCallback.POST_TEAR_INIT)
-  override postTearInit(tear: EntityTear): void {
-    const player = getPlayerFromEntity(tear);
-
-    if (!player || !isMiku(player, true)) {
-      return;
-    }
-
-    const tearData = getData<GlitchNoteTearData>(tear);
-    const rng = tear.GetDropRNG();
-
-    setTearColor(tear, tearData, rng);
-  }
-
   @Callback(ModCallback.POST_FIRE_TEAR)
   override postFireTear(tear: EntityTear): void {
     const player = getPlayerFromEntity(tear);
@@ -305,7 +293,7 @@ export class MikuTaintedCharacter extends Character {
     const playerData = getData<TaintedMikuData>(player);
     const { notes, attackMode } = playerData;
 
-    if (attackMode === MikuNoteMode.GLITCH) {
+    if (attackMode === MikuNoteMode.EMPTY) {
       return;
     }
 
@@ -337,7 +325,7 @@ export class MikuTaintedCharacter extends Character {
 
       this.applyNoteEffect(player, noteTear, note);
 
-      const tearData = getData<GlitchNoteTearData>(noteTear);
+      const tearData = getData<BloodNoteTearData>(noteTear);
       setTearColor(noteTear, tearData, noteTear.GetDropRNG());
     }
   }
@@ -364,6 +352,10 @@ export class MikuTaintedCharacter extends Character {
 
   @Callback(ModCallback.POST_RENDER)
   render(): void {
+    if (isMCMOpen()) {
+      return;
+    }
+
     const players = getPlayersOfType(PlayerTypeCustom.MIKU_B);
     if (players.length === 0) {
       return;
@@ -455,7 +447,7 @@ export class MikuTaintedCharacter extends Character {
             : noteConfig.color;
 
         this.noteSprite.Color =
-          attackMode === MikuNoteMode.GLITCH
+          attackMode === MikuNoteMode.EMPTY
             ? Color(
                 baseColor.R * 0.35,
                 baseColor.G * 0.35,
@@ -473,7 +465,6 @@ export class MikuTaintedCharacter extends Character {
       // --------------------------------------------------
       // Selected note above player
       // --------------------------------------------------
-
       const game = Game();
       const hud = game.GetHUD();
 
@@ -529,39 +520,41 @@ export class MikuTaintedCharacter extends Character {
         this.activeNoteSprite.Render(Vector(floatX, floatY));
 
         // Remaining uses text.
-        const text = `${activeNote.remainingUses}`;
-        const textScale = 0.5;
+        if (getShowNoteCounter()) {
+          const text = `${activeNote.remainingUses}`;
+          const textScale = 0.5;
 
-        const textX = floatX + 6;
-        const textY = floatY + 6;
+          const textX = floatX + 6;
+          const textY = floatY + 6;
 
-        // Shadow.
-        this.font.DrawStringScaled(
-          text,
-          textX + 1,
-          textY + 1,
-          textScale,
-          textScale,
-          KColor(0, 0, 0, 1),
-          0,
-          true,
-        );
+          // Shadow.
+          this.font.DrawStringScaled(
+            text,
+            textX + 1,
+            textY + 1,
+            textScale,
+            textScale,
+            KColor(0, 0, 0, 1),
+            0,
+            true,
+          );
 
-        // Main text.
-        this.font.DrawStringScaled(
-          text,
-          textX,
-          textY,
-          textScale,
-          textScale,
-          KColor(1, 1, 1, 1),
-          0,
-          true,
-        );
+          // Main text.
+          this.font.DrawStringScaled(
+            text,
+            textX,
+            textY,
+            textScale,
+            textScale,
+            KColor(1, 1, 1, 1),
+            0,
+            true,
+          );
+        }
+
+        // Update collectible costumes.
+        updateCollectibleCostumes(player, ITEM_COSTUMES);
       }
-
-      // Update collectible costumes.
-      updateCollectibleCostumes(player, ITEM_COSTUMES);
     }
   }
 
@@ -584,7 +577,7 @@ export class MikuTaintedCharacter extends Character {
 
     const tear = source.Entity.ToTear();
     if (tear) {
-      const tearData = getData<GlitchNoteTearData>(tear);
+      const tearData = getData<BloodNoteTearData>(tear);
       if (tearData.onHitEnemy && isActiveEnemy(entity)) {
         tearData.onHitEnemy(entity as EntityNPC);
       }
@@ -712,7 +705,7 @@ export class MikuTaintedCharacter extends Character {
   }
 
   @CallbackCustom(ModCallbackCustom.POST_PLAYER_COLLECTIBLE_ADDED)
-  postAddCollectible(
+  override postAddCollectible(
     player: EntityPlayer,
     collectibleType: CollectibleType,
   ): void {
@@ -753,7 +746,7 @@ export class MikuTaintedCharacter extends Character {
   }
 
   @Callback(ModCallback.PRE_PICKUP_COLLISION)
-  prePickupCollision(
+  override prePickupCollision(
     pickup: EntityPickup,
     collider: Entity,
     _low: boolean,
@@ -779,7 +772,7 @@ export class MikuTaintedCharacter extends Character {
 
     if (
       itemID === CollectibleType.ERASER
-      && player.HasCollectible(CollectibleTypeCustom.RUBBER_NOTE)
+      && player.HasCollectible(CollectibleTypeCustom.ERASER_NOTE)
     ) {
       return false;
     }
@@ -805,7 +798,7 @@ export class MikuTaintedCharacter extends Character {
   /**
    * Checks whether the specified collectible is disabled while Tainted Miku is using Notes mode.
    *
-   * If the item is disabled, switches Tainted Miku back to Glitch mode.
+   * If the item is disabled, switches Tainted Miku back to Empty mode.
    *
    * @param player The player character entity.
    * @param itemID The collectible being checked.
@@ -816,12 +809,12 @@ export class MikuTaintedCharacter extends Character {
   ): void {
     const data = getData<TaintedMikuData>(player);
 
-    if (isNoteItemDisabled(itemID) && data.attackMode !== MikuNoteMode.GLITCH) {
-      setMikuAttackMode(player, MikuNoteMode.GLITCH);
+    if (isNoteItemDisabled(itemID) && data.attackMode !== MikuNoteMode.EMPTY) {
+      setMikuAttackMode(player, MikuNoteMode.EMPTY);
 
       Debugger.char(
         NAME,
-        `Switched to Glitch mode because ${itemID} is disabled in Notes mode.`,
+        `Switched to Empty mode because ${itemID} is disabled in Notes mode.`,
       );
     }
   }
@@ -842,7 +835,7 @@ export class MikuTaintedCharacter extends Character {
     note: NoteInstance,
   ): void {
     const noteData = NOTE_TYPE_DATA[note.subType];
-    const tearData = getData<GlitchNoteTearData>(tear);
+    const tearData = getData<BloodNoteTearData>(tear);
 
     noteData.applyEffect?.(player, tear);
     noteData.onFireTear?.(player, tear);
@@ -1000,7 +993,7 @@ export class MikuTaintedCharacter extends Character {
       eid,
       "Mom's Knife",
       PlayerTypeCustom.MIKU_B,
-      `#{{Player${PlayerTypeCustom.MIKU_B}}} {{Warning}} Tainted Miku can use the knife only in her glitched mode`,
+      `#{{Player${PlayerTypeCustom.MIKU_B}}} {{Warning}} Tainted Miku can use the knife only in her empty mode`,
       () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
     );
 
@@ -1016,7 +1009,7 @@ export class MikuTaintedCharacter extends Character {
       eid,
       "Eraser",
       PlayerTypeCustom.MIKU_B,
-      `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible638}} Eraser#{{Collectible${CollectibleTypeCustom.RUBBER_NOTE}}} Rubber Notes can permanently erase enemies.#{{Warning}} Doesn't work on bosses.`,
+      `#{{Player${PlayerTypeCustom.MIKU_B}}} Replaces {{Collectible638}} Eraser#{{Collectible${CollectibleTypeCustom.ERASER_NOTE}}} Rubber Notes can permanently erase enemies.#{{Warning}} Doesn't work on bosses.`,
       () => anyPlayerIs(PlayerTypeCustom.MIKU_B),
     );
   }

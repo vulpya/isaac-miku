@@ -1,8 +1,8 @@
 <AnimatedActor>
-	<Info CreatedBy="Vulpya" CreatedOn="3/24/2026 11:55:01 AM" Version="11" Fps="30"/>
+	<Info CreatedBy="Vulpya" CreatedOn="18/08/2026 16:28:18" Version="12" Fps="30"/>
 	<Content>
 		<Spritesheets>
-			<Spritesheet Path="glitch_note.png" Id="0"/>
+			<Spritesheet Path="lost_note.png" Id="0"/>
 		</Spritesheets>
 		<Layers>
 			<Layer Name="Note" Id="0" SpritesheetId="0"/>

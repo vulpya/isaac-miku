@@ -19,16 +19,3 @@ export const spawnPoof = (
   SFXManager().Play(SoundEffect.TEAR_IMPACTS);
   return poof;
 };
-
-/**
- * Calculates a vertical offset for a wobbling effect, based on the current frame.
- *
- * @param index The index of the object, used to offset the phase so multiple objects wobble out of
- *              sync.
- * @param amplitude The maximum displacement of the wobble (in pixels).
- * @param speed The speed of the wobble, where higher values make the motion faster.
- * @returns The vertical offset value to add to the object's Y position.
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getWobbleOffset = (index: int, amplitude: float, speed: float): float =>
-  Math.sin(Game().GetFrameCount() * speed + index) * amplitude;

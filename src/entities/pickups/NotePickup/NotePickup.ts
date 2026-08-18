@@ -137,7 +137,7 @@ const SYNERGY_NOTE_ITEMS: Partial<Record<NotePickupSubType, CollectibleType>> =
 
     [NotePickupSubType.DR_FETUS]: CollectibleTypeCustom.DR_FETUS_NOTE,
 
-    [NotePickupSubType.RUBBER]: CollectibleTypeCustom.RUBBER_NOTE,
+    [NotePickupSubType.ERASER]: CollectibleTypeCustom.ERASER_NOTE,
   } as const;
 
 /**

@@ -20,7 +20,7 @@ import { CollectibleTypeCustom } from "../../../enum";
 
 const NAME = "Broken Voice";
 const DESCRIPTION =
-  'Toggle between silence and voices.#{{ColorGray}}"it\'s not your voice anymore"';
+  'Toggle between silence and voices.#{{ColorGray}}"it is not your voice anymore...';
 
 export class BrokenVoiceItem extends ActiveItem {
   /**
@@ -47,9 +47,9 @@ export class BrokenVoiceItem extends ActiveItem {
 
       setMikuAttackMode(
         player,
-        playerData.attackMode === MikuAttackMode.GLITCH
+        playerData.attackMode === MikuAttackMode.EMPTY
           ? MikuAttackMode.VOICES
-          : MikuAttackMode.GLITCH,
+          : MikuAttackMode.EMPTY,
       );
     }
 
