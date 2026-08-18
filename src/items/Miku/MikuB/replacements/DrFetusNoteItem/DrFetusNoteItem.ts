@@ -1,15 +1,15 @@
+import { CollectibleType } from "isaac-typescript-definitions";
 import type { EIDExtended } from "../../../../../compat/EID";
 import { Debugger } from "../../../../../util/debug";
 import { CollectibleTypeCustom } from "../../../../enum";
 import { Item } from "../../../../Item";
 
-const NAME = "Brimstone Note";
-const DESCRIPTION =
-  "{{Collectible118}} Brimstone Notes can now drop from enemies.";
+const NAME = "Bomb Note";
+const DESCRIPTION = `{{Collectible${CollectibleType.DR_FETUS}}} Bomb Notes can now drop from enemies.`;
 
-export class BrimstoneNoteItem extends Item {
+export class DrFetusNoteItem extends Item {
   override setupEID(eid: EIDExtended): void {
-    eid.addCollectible(CollectibleTypeCustom.BRIMSTONE_NOTE, DESCRIPTION);
+    eid.addCollectible(CollectibleTypeCustom.DR_FETUS_NOTE, DESCRIPTION);
     Debugger.eid(NAME, "Add description.");
   }
 }

@@ -25,7 +25,7 @@ export interface MikuPlayerData extends PlayerData {
 const NAME = "Miku";
 const DESCRIPTION = "Uses music to charm enemies.";
 const BIRTHRIGHT_DESC =
-  "Chance to permanently charm enemies. Scales with Luck.";
+  "Chance to permanently charm enemies. Scales with {{LuckSmall}}Luck.";
 const ACTIVE = CollectibleTypeCustom.MICROPHONE;
 const NULL_ITEM = CollectibleTypeCustom.MIKU_IDOL;
 const HAIR = Isaac.GetCostumeIdByPath("gfx/characters/Character_MikuHead.anm2");

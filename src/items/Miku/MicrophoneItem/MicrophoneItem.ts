@@ -19,7 +19,7 @@ import { CollectibleTypeCustom } from "../../enum";
 
 const NAME = "Microphone";
 const DESCRIPTION =
-  "Charms all enemies in the room, making them permanent fans";
+  "Charms all enemies in the room, making them permanent fans!";
 
 export class MicrophoneItem extends ActiveItem {
   /**

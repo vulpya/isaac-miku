@@ -7,6 +7,7 @@ const DEBUG = {
   TEAR: false,
   PICKUP: false,
   EID: false,
+  MCM: false,
 } as const;
 
 /** Debugging utility functions for the mod. */
@@ -96,5 +97,20 @@ export const Debugger = {
       return;
     }
     print(`[EID Compat\\${name}]: ${message}`);
+  },
+  /**
+   * Logs a debug message related to Mod Config Menu.
+   *
+   * Only logs if {@link DEBUG.MCM} is enabled.
+   *
+   * @param name The context or source of the `MCM` event.
+   * @param message The debug message to log.
+   */
+  mcm: (name: string, message: string): void => {
+    if (!DEBUG.MCM) {
+      return;
+    }
+
+    print(`[MCM Compat\\${name}]: ${message}`);
   },
 } as const;

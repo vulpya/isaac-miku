@@ -6,7 +6,8 @@ export const CollectibleTypeCustom = {
 
   // REPLACEMENT ITEMS FOR TAINTED MIKU.
   BRIMSTONE_NOTE: Isaac.GetItemIdByName("Brimstone Note"),
-  DR_FETUS_NOTE: Isaac.GetItemIdByName("Dr. Fetus Note"),
+  ERASER_NOTE: Isaac.GetItemIdByName("Rubber Note"),
+  DR_FETUS_NOTE: Isaac.GetItemIdByName("Bomb Note"),
 
   // NULL items
   MIKU_IDOL: Isaac.GetItemIdByName("Miku Idol"),
