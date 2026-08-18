@@ -1,0 +1,14 @@
+[h1]Version 0.5[/h1]
+
+- Completely reworked Tainted Miku's Lost Note system.
+- Tainted Miku now starts with a random selection of Lost Notes.
+- Added more unique Lost Notes with different effects.
+- Added new Special Synergy Notes for Brimstone, Dr. Fetus, and Eraser.
+- Added weighted Lost Note drops and rebalanced Note rarity and uses.
+- Added full MCM compatibility, including a Note-use counter.
+- Improved compatibility and handling for item replacements and incompatible items.
+- Added EID descriptions for Tainted Miku's new item interactions and Synergy Notes.
+- Added various visual, balancing, and gameplay improvements to Tainted Miku.
+- And a whole bunch of other stuff I probably forgot to mention. :3
+
+Thanks for playing my mod! :3

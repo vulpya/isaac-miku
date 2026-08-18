@@ -1,0 +1,92 @@
+[h1]Hatsune Miku (+Tainted)[/h1]
+
+A standalone character mod for [b]The Binding of Isaac: Repentance[/b] featuring Hatsune Miku and her Tainted counterpart!
+
+[h1]VERSION 0.5 OUT NOW![/h1]
+
+Tainted Miku has received a major gameplay and design overhaul!
+
+Her broken voice is now built around a the overhauled [b]Lost Note[/b] system, with 8 default notes & even some special synergy notes!
+All Lost Notes got some changes to their weight and uses to reflect the effectiveness of it.
+I also overhauled the Lost Note Pickup system as well, not the physics work as intended - and no more Note stealing.
+
+I also fixed a lot of bugs :3
+
+----------------------------------------------------------------------
+
+[h1]INFO[/h1]
+
+I get a lot of comments about the game not launching or the mod breaking the game. Make sure you have [b]all DLCs[/b] required for The Binding of Isaac: Repentance!
+
+----------------------------------------------------------------------
+[h2]Features[/h2]
+
+[b]Hatsune Miku[/b]
+• Attacks by singing, firing musical [b]Notes[/b] at her enemies.
+• Her notes have a chance to [b]charm enemies[/b], causing them to fight alongside her temporarily.
+• [b]Birthright Effect:[/b] Charmed enemies have a chance to permanently become loyal [b]Fans[/b]!
+• Use her [b]Microphone[/b] to inspire her audience!
+• The Microphone can also interact with certain enemies, currently only the Angels.
+
+[b]Tainted Miku[/b]
+• Tainted Miku's voice has been broken, leaving her unable to produce ordinary Notes. Instead, she attacks with [b]Bloody Notes[/b] and [b]Lost Notes[/b].
+• Starts each run with a small selection of Lost Notes.
+• Enemies can drop additional Lost Notes during a run.
+• There are several types of Lost Notes all with individual [b]effects, colors, weights, and limited uses[/b].
+• Cycle through your available Notes while using [b]Voices[/b] mode (Drop Key).
+• Switch between [b]Empty[/b] and [b]Voices[/b] modes using the [b]Broken Microphone[/b].
+• Lost Notes can dramatically change how Tainted Miku performs, so use them wisely!
+
+[b]Lost Notes[/b]
+[spoiler=Lost Notes]
+• [b]Love Note[/b] — Permanently charms enemies.
+• [b]Blazing Note[/b] — Burns enemies.
+• [b]Freeze Note[/b] — Freezes enemies.
+• [b]Toxic Note[/b] — Poisons enemies and creates explosive tears.
+• [b]Spooky Note[/b] — Confuses enemies and can inflict Fear.
+• [b]Magical Note[/b] — Gives tears a homing effect.
+• [b]Greedy Note[/b] — Can turn enemies into gold.
+• [b]Lucky Note[/b] — Can create Lucky Pennies.
+[/spoiler]
+
+[b]Special Synergy Notes[/b]
+Certain powerful items are transformed into [b]Special Synergy Notes[/b], unlocking unique effects:
+
+[spoiler=Special Synergy Notes]
+• [b]Brimstone -> Brimstone Note[/b] — Fires powerful Brimstone lasers.
+• [b]Dr. Fetus -> Bomb Note[/b] — Converts tears into powerful explosive bombs.
+• [b]Eraser -> Rubber Note[/b] — Permanently erases eligible enemy types.
+[/spoiler]
+
+[b]Birthright[/b]
+Tainted Miku's Birthright further distorts her fractured melody:
+
+• Fires up to [b]5 Lost Notes[/b] with each shot.
+• Each Note retains its own effect.
+• Notes consume their uses independently.
+
+----------------------------------------------------------------------
+[h2]Mod Compatibility[/h2]
+• [b]External Item Descriptions (EID):[/b] Full native support is included.
+• [b]Mod Config Menu (MCM):[/b] Full support is included.
+• MCM options include:
+  • [b]Show Note Counter[/b] — Show or hide the remaining-use counter for the selected Lost Note.
+  • [b]Note Drop Chance[/b] — Configure the chance for enemies to drop Lost Notes.
+
+Notice any missing or incorrect descriptions, compatibility issues, or bugs? Please leave a comment or open an Issue.
+
+----------------------------------------------------------------------
+
+You can check out the Github Repository here:
+[url=https://github.com/vulpya/isaac-miku]Source Code[/url]
+
+----------------------------------------------------------------------
+[h2]Disclaimer[/h2]
+
+This is a non-commercial, fan-made mod created as a personal project for fun. All characters, names, and related properties belong to their original creators. This project is not affiliated with or endorsed by any official rights holders.
+
+----------------------------------------------------------------------
+[h2]Special Thanks[/h2]
+
+• [url=https://steamcommunity.com/profiles/76561198102520074]ale[/url] — For creating the amazing Miku/Vocaloid sprites!
+• [url=https://steamcommunity.com/id/thearexz]Arexz[/url] — For helping with custom sprite editing and refinement.
