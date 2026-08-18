@@ -12,7 +12,7 @@ import { getFrames } from "./frames";
  *
  * An entity is charmable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to effects).
+ * - Vulnerable.
  * - Not a boss.
  *
  * @param entity The entity to check.
@@ -24,17 +24,19 @@ export const isCharmable = (entity: Entity): boolean =>
 /**
  * Applies the **Charm** effect to an enemy entity.
  *
- * - If the enemy is already charmed, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot be charmed.
+ * If the enemy is already charmed, the duration is refreshed.
+ *
+ * By default, bosses cannot receive permanent charm. Pass `bosses = true` to allow permanent charm
+ * on bosses.
  *
  * @param entity The target enemy to charm.
- * @param seconds Duration of the charm effect in seconds. Ignored if `permanent` is `true`.
+ * @param seconds Duration of the charm effect in seconds.
  * @param permanent If `true`, applies charm indefinitely.
+ * @param bosses If `true`, allows permanent charm to affect bosses.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * charmEnemy(enemyEntity, 5); // Charm for 5 seconds
+ * charmEnemy(enemy, 5);
  * ```
  */
 export const charmEnemy = (
@@ -47,6 +49,7 @@ export const charmEnemy = (
     EntityRef(entity),
     permanent && (bosses || !entity.IsBoss()) ? -1 : getFrames(seconds),
   );
+
   return true;
 };
 
@@ -55,7 +58,7 @@ export const charmEnemy = (
  *
  * An entity is freezable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to effects).
+ * - Vulnerable.
  *
  * @param entity The entity to check.
  * @returns `true` if the entity can be frozen, otherwise `false`.
@@ -66,18 +69,17 @@ export const isFreezable = (entity: Entity): boolean =>
 /**
  * Applies the **Freeze** effect to an enemy entity.
  *
- * - If the enemy is already frozen, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot receive permanent freeze; their duration is always frame-based.
+ * If the enemy is already frozen, the duration is refreshed.
+ *
+ * Permanent freeze is not applied to bosses.
  *
  * @param entity The target enemy to freeze.
- * @param seconds Duration of the freeze effect in seconds. Ignored if `permanent` is `true`.
- * @param permanent If `true`, applies freeze indefinitely (except for bosses, which still use
- *                  `frames`).
+ * @param seconds Duration of the freeze effect in seconds.
+ * @param permanent If `true`, applies freeze indefinitely to non-boss enemies.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * freezeEnemy(enemyEntity, 3); // Freeze for 3 seconds
+ * freezeEnemy(enemy, 3);
  * ```
  */
 export const freezeEnemy = (
@@ -89,6 +91,7 @@ export const freezeEnemy = (
     EntityRef(entity),
     permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
   );
+
   return true;
 };
 
@@ -97,7 +100,7 @@ export const freezeEnemy = (
  *
  * An entity is burnable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to status effects).
+ * - Vulnerable.
  *
  * @param entity The entity to check.
  * @returns `true` if the entity can be burned, otherwise `false`.
@@ -108,25 +111,24 @@ export const isBurnable = (entity: Entity): boolean =>
 /**
  * Applies the **Burn** effect to an enemy entity.
  *
- * - If the enemy is already burning, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot receive permanent burn; their duration is always frame-based.
+ * If the enemy is already burning, the duration is refreshed.
+ *
+ * Permanent burn is not applied to bosses.
  *
  * @param entity The target enemy to burn.
- * @param damage Damage dealt per tick while burning.
- * @param seconds Duration of the burn effect in seconds. Ignored if `permanent` is `true` (except
- *                for bosses).
- * @param permanent If `true`, applies burn indefinitely (non-boss enemies only).
+ * @param seconds Duration of the burn effect in seconds.
+ * @param damage Damage dealt per burn tick.
+ * @param permanent If `true`, applies burn indefinitely to non-boss enemies.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * burnEnemy(enemyEntity, 3.5, 4); // Burn for 4 seconds dealing 3.5 damage per tick
+ * burnEnemy(enemy, 0.4, 3);
  * ```
  */
 export const burnEnemy = (
   entity: Entity,
-  damage: float,
   seconds: float,
+  damage: float,
   permanent = false,
 ): boolean => {
   entity.AddBurn(
@@ -134,15 +136,16 @@ export const burnEnemy = (
     permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
     damage,
   );
+
   return true;
 };
 
 /**
  * Checks if an entity is eligible for the **Fear** effect.
  *
- * An entity can be feared if it is:
+ * An entity is fearable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to status effects).
+ * - Vulnerable.
  *
  * @param entity The entity to check.
  * @returns `true` if the entity can be feared, otherwise `false`.
@@ -151,20 +154,19 @@ export const isFearable = (entity: Entity): boolean =>
   isActiveEnemy(entity) && entity.IsVulnerableEnemy();
 
 /**
- * Applies the **Burn** effect to an enemy entity.
+ * Applies the **Fear** effect to an enemy entity.
  *
- * - If the enemy is already burning, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot be permanent feared; their duration is always frame-based.
+ * If the enemy is already feared, the duration is refreshed.
+ *
+ * Permanent fear is not applied to bosses.
  *
  * @param entity The target enemy to fear.
- * @param seconds Duration of the fear effect in seconds. Ignored if `permanent` is `true` (except
- *                for bosses).
- * @param permanent If `true`, applies burn indefinitely (non-boss enemies only).
+ * @param seconds Duration of the fear effect in seconds.
+ * @param permanent If `true`, applies fear indefinitely to non-boss enemies.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * fearEnemy(enemyEntity, 4); // Fear for 4 seconds.
+ * fearEnemy(enemy, 1.5);
  * ```
  */
 export const fearEnemy = (
@@ -176,18 +178,19 @@ export const fearEnemy = (
     EntityRef(entity),
     permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
   );
+
   return true;
 };
 
 /**
  * Checks if an entity is eligible for the **Confusion** effect.
  *
- * An entity can be confused if it is:
+ * An entity is confusable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to status effects).
+ * - Vulnerable.
  *
  * @param entity The entity to check.
- * @returns `true` if the entity can be feared, otherwise `false`.
+ * @returns `true` if the entity can be confused, otherwise `false`.
  */
 export const isConfusable = (entity: Entity): boolean =>
   isActiveEnemy(entity) && entity.IsVulnerableEnemy();
@@ -195,18 +198,17 @@ export const isConfusable = (entity: Entity): boolean =>
 /**
  * Applies the **Confusion** effect to an enemy entity.
  *
- * - If the enemy is already confused, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot receive permanent confusion; their duration is always frame-based.
+ * If the enemy is already confused, the duration is refreshed.
+ *
+ * Permanent confusion is not applied to bosses.
  *
  * @param entity The target enemy to confuse.
- * @param seconds Duration of the fear effect in seconds. Ignored if `permanent` is `true` (except
- *                for bosses).
- * @param permanent If `true`, applies confusion indefinitely (non-boss enemies only).
+ * @param seconds Duration of the confusion effect in seconds.
+ * @param permanent If `true`, applies confusion indefinitely to non-boss enemies.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * confuseEnemy(enemyEntity, 4); // Confuse for 4 seconds.
+ * confuseEnemy(enemy, 2);
  * ```
  */
 export const confuseEnemy = (
@@ -214,22 +216,23 @@ export const confuseEnemy = (
   seconds: float,
   permanent = false,
 ): boolean => {
-  entity.AddFear(
+  entity.AddConfusion(
     EntityRef(entity),
     permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
   );
+
   return true;
 };
 
 /**
  * Checks if an entity is eligible for the **Midas Freeze** effect.
  *
- * An entity can be frozen if it is:
+ * An entity is midas-freezable if it is:
  * - Active and alive.
- * - Vulnerable (can take damage and respond to status effects).
+ * - Vulnerable.
  *
  * @param entity The entity to check.
- * @returns `true` if the entity can be frozen, otherwise `false`.
+ * @returns `true` if the entity can be turned into gold, otherwise `false`.
  */
 export const isMidasFreezable = (entity: Entity): boolean =>
   isActiveEnemy(entity) && entity.IsVulnerableEnemy();
@@ -237,18 +240,17 @@ export const isMidasFreezable = (entity: Entity): boolean =>
 /**
  * Applies the **Midas Freeze** effect to an enemy entity.
  *
- * - If the enemy is already frozen, calling this will refresh the duration unless `permanent` is
- *   `true`.
- * - Bosses cannot receive permanent midas freeze; their duration is always frame-based.
+ * If the enemy is already gold, the duration is refreshed.
  *
- * @param entity The target enemy to freeze.
- * @param seconds Duration of the midas freeze effect in seconds. Ignored if `permanent` is `true`
- *                (except for bosses).
- * @param permanent If `true`, applies midas touch indefinitely (non-boss enemies only).
+ * Permanent Midas Freeze is not applied to bosses.
+ *
+ * @param entity The target enemy to turn into gold.
+ * @param seconds Duration of the Midas Freeze effect in seconds.
+ * @param permanent If `true`, applies Midas Freeze indefinitely to non-boss enemies.
  * @returns Always returns `true` after applying the effect.
  * @example
  * ```ts
- * midasFreezeEnemy(enemyEntity, 4); // Midas Freeze for 4 seconds.
+ * midasFreezeEnemy(enemy, 3);
  * ```
  */
 export const midasFreezeEnemy = (
@@ -260,28 +262,33 @@ export const midasFreezeEnemy = (
     EntityRef(entity),
     permanent && !entity.IsBoss() ? -1 : getFrames(seconds),
   );
+
   return true;
 };
 
 /**
- * Returns a unique key for an enemy, combining type and variant.
+ * Returns a unique key for an enemy, combining its type and variant.
  *
- * Useful for tracking specific enemies (e.g., for Rubber Note effects).
+ * This is useful for tracking enemy types that have been permanently erased by effects such as the
+ * Rubber Note.
  *
  * @param npc The enemy entity.
- * @returns A string in the format `"Type_Variant"`, e.g., `"3_1"`.
+ * @returns A string in the format `"Type_Variant"`.
  * @example
  * ```ts
- * const key = getEnemyKey(enemyEntity); // "3_1"
+ * const key = getEnemyKey(enemy);
+ * // "3_1"
  * ```
  */
 export const getEnemyKey = (npc: EntityNPC): string =>
   `${npc.Type}_${npc.Variant}`;
 
 /**
- * Instantly removes all active enemies of a specific type and variant from the room.
+ * Instantly removes all active enemies of a specific type and variant from the current room.
  *
- * @param type The entity type to remove (e.g., `EntityType.ENTITY_FLY`).
+ * Each erased enemy also spawns a pink Eraser-style poof effect.
+ *
+ * @param type The entity type to remove.
  * @param variant The variant of the entities to remove.
  * @returns The number of enemies that were erased.
  * @example
@@ -293,12 +300,13 @@ export const eraseEnemies = (
   type: EntityType,
   variant: Entity["Variant"],
 ): number => {
-  const enemies = getEntities(type, variant, -1, true).filter((e) =>
-    isActiveEnemy(e),
+  const enemies = getEntities(type, variant, -1, true).filter((entity) =>
+    isActiveEnemy(entity),
   );
 
   for (const enemy of enemies) {
     enemy.Remove();
+
     const puff = spawnEffect(
       EffectVariant.POOF_1,
       0,
@@ -306,19 +314,21 @@ export const eraseEnemies = (
       VectorZero,
       enemy,
     );
+
     // Eraser color.
     puff.SetColor(Color(1, 0.4, 0.6, 1, 0, 0, 0), -1, 0);
   }
+
   return enemies.length;
 };
 
 /**
- * Returns alive & vulnerable enemies in the current room.
+ * Returns active enemies in the current room.
  *
  * @param type Optional entity type to filter by. Defaults to any type.
- * @param variant Optional variant to filter by. Defaults to any variant.
- * @param subType Optional subType to filter by. Defaults to any subType.
- * @returns Array of alive enemy entities matching the criteria.
+ * @param variant Optional entity variant to filter by. Defaults to any variant.
+ * @param subType Optional entity subtype to filter by. Defaults to any subtype.
+ * @returns An array of active enemy entities matching the criteria.
  */
 export const getEnemies = (
   type: EntityType = EntityType.NULL,

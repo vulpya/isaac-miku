@@ -4,8 +4,8 @@ import { Debugger } from "../../../../../util/debug";
 import { CollectibleTypeCustom } from "../../../../enum";
 import { Item } from "../../../../Item";
 
-const NAME = "Dr. Fetus Note";
-const DESCRIPTION = `{{Collectible${CollectibleType.DR_FETUS}}} Dr. Fetus Notes can now drop from enemies.`;
+const NAME = "Bomb Note";
+const DESCRIPTION = `{{Collectible${CollectibleType.DR_FETUS}}} Bomb Notes can now drop from enemies.`;
 
 export class DrFetusNoteItem extends Item {
   override setupEID(eid: EIDExtended): void {
